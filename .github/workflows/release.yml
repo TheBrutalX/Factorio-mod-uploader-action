@@ -7,9 +7,6 @@ on:
     paths-ignore: 
       - '**.md'
 
-permissions:
-  contents: write
-
 jobs:
   tests:
     runs-on: ubuntu-latest
