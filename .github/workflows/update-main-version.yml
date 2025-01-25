@@ -15,33 +15,31 @@ on:
           - v2
           - v3
 
-env:
-  BOT_APPID: 1044190
-
 jobs:
   tag:
     runs-on: ubuntu-latest
     steps:
+
+    - name: App Authentication
+      uses: actions/create-github-app-token@v1
+      id: auth
+      with:
+        app-id: ${{ vars.APP_ID }}
+        private-key: ${{ secrets.APP_KEY }}
+        repositories: ${{ github.event.repository.name }}
+        owner: ${{ github.repository_owner }}
+
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
+        token: ${{ steps.auth.outputs.token }}
 
-    - uses: actions/create-github-app-token@v1
-      id: app-token
-      with:
-        app-id: ${{ env.BOT_APPID }}
-        private-key: ${{ secrets.BOT_TOKEN }}
-
-    - name: Git config
+    - name: Set up Git
       run: |
-        git config --global user.name 'github-actions[bot]'
-        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-        git config --global url."https://x-access-token:${GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
-      env:
-        GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+        git config user.name 'release[bot]'
+        git config user.email '${{ steps.auth.outputs.app-slug }}@github.com'
 
-    - name: Tag new target
-      run: git tag -f ${{ github.event.inputs.major_version }} ${{ github.event.inputs.target }}
-
-    - name: Push new tag
-      run: git push origin ${{ github.event.inputs.major_version }} --force
+    - name: Assing version to ${{ github.event.inputs.major_version }}
+      run: |
+        git tag -f ${{ github.event.inputs.major_version }} ${{ github.event.inputs.target }}
+        git push -f origin ${{ github.event.inputs.major_version }}
