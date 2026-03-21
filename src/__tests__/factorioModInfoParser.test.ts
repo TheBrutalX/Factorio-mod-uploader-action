@@ -146,11 +146,11 @@ describe('FactorioModInfoParser', () => {
         it('should validate tags', async () => {
             const yaml = `
                 mod_info:
-                    tags: ["circuit", "cheats", "test"]
+                    tags: ["circuit-network", "logistic-network", "cheats", "test"]
             `;
             const parser = new FactorioModInfoParser(yaml);
             await parser.validate();
-            expect(parser.getFullInfo().tags).toEqual(["circuit", "cheats"]);
+            expect(parser.getFullInfo().tags).toEqual(["circuit-network", "logistic-network", "cheats" ]);
         });
     });
 });
