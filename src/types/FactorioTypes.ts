@@ -47,8 +47,8 @@ export type FactorioModTagType =
     | "environment"
     | "mining"
     | "fluids"
-    | "logistic"
-    | "circuit"
+    | "logistic-network"
+    | "circuit-network"
     | "manufacturing"
     | "power"
     | "storage"
@@ -66,8 +66,8 @@ export const FactorioModTags: FactorioModTagType[] = [
     "environment",
     "mining",
     "fluids",
-    "logistic",
-    "circuit",
+    "logistic-network",
+    "circuit-network",
     "manufacturing",
     "power",
     "storage",
