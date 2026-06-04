@@ -21,7 +21,7 @@ jobs:
 
       - name: Run tests
         run: npm test
-  build:
+  publish:
     runs-on: ubuntu-latest
     needs: [ tests ]
 
@@ -63,31 +63,6 @@ jobs:
           git add package-lock.json
           git commit -m 'chore(release): Added bundle.js [skip ci]'
           git push
-
-  release:
-    runs-on: ubuntu-latest
-    needs: [ tests, build ]
-
-    steps:
-      
-      - name: App Authentication
-        uses: actions/create-github-app-token@v1
-        id: auth
-        with:
-          app-id: ${{ vars.APP_ID }}
-          private-key: ${{ secrets.APP_KEY }}
-          repositories: ${{ github.event.repository.name }}
-          owner: ${{ github.repository_owner }}
-
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          token: ${{ steps.auth.outputs.token }}
-
-      - name: Set up Git
-        run: |
-          git config user.name 'release[bot]'
-          git config user.email '${{ steps.auth.outputs.app-slug }}@github.com'
 
       - name: Get version
         id: version
