@@ -52,8 +52,6 @@ jobs:
 ```
 This is the basic version, for the specific option see the detail of each step
 
-This is the basic version, for the specific option see the detail of each step
-
 If you need to understand the file I have written a guide in the [Wiki](https://github.com/TheBrutalX/Factorio-mod-uploader-action/wiki/WorkFlow-detail)
 ## Step overview
 
