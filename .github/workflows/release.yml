@@ -95,3 +95,14 @@ jobs:
           git push origin :latest
           git tag -a latest -m "Latest release: v${{ env.VERSION }}"
           git push origin latest
+
+      - name: Update major version tag (e.g., v2 → latest patch)
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          VERSION: ${{ steps.version.outputs.VERSION }}
+        run: |
+          MAJOR=$(echo "$VERSION" | cut -d. -f1)
+          MAJOR_TAG="v${MAJOR}"
+          echo "Updating $MAJOR_TAG to point at ${{ github.ref_name }}"
+          git tag -f "$MAJOR_TAG" "${{ github.ref_name }}"
+          git push origin "$MAJOR_TAG" -f
