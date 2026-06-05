@@ -5,6 +5,8 @@ on:
     tags:
       - 'v*'
       - '[0-9]+.[0-9]+.[0-9]+'
+    branches: 
+      - main
     paths-ignore: 
       - '**.md'
 
@@ -20,7 +22,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: '.nvmrc'
 
       - name: Install dependencies
         run: npm ci
@@ -44,7 +46,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: '.nvmrc'
 
       - name: Set up Git
         run: |
@@ -57,8 +59,17 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Commit bundle.js (tag push only)
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          git add -f dist/
+          git add package-lock.json
+          git commit -m 'chore(release): Added bundle.js [skip ci]' || echo "No changes to commit"
+          git push
+
       - name: Get version from tag
         id: version
+        if: startsWith(github.ref, 'refs/tags/')
         run: |
           # Extract version, handling both 'v1.0.0' and '1.0.0' formats
           VERSION=${GITHUB_REF_NAME#v}
@@ -66,6 +77,7 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
         env:
           VERSION: ${{ steps.version.outputs.VERSION }}
         uses: softprops/action-gh-release@v2
@@ -74,20 +86,12 @@ jobs:
           name: Release v${{ env.VERSION }}
           generate_release_notes: true
 
-      - name: Commit bundle.js (if changed)
-        run: |
-          git add -f dist/
-          git add package-lock.json
-          if ! git diff --cached --quiet; then
-            git commit -m 'chore(release): Added bundle.js [skip ci]'
-            git push
-          fi
-
       - name: Move latest tag to newest release
+        if: startsWith(github.ref, 'refs/tags/')
         env:
           VERSION: ${{ steps.version.outputs.VERSION }}
         run: |
           git tag -d latest
           git push origin :latest
-          git tag -a latest -m "Latest release: ${{ github.ref_name }}"
+          git tag -a latest -m "Latest release: v${{ env.VERSION }}"
           git push origin latest

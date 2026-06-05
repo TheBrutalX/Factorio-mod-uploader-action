@@ -4,6 +4,8 @@ node_modules
 .env
 # Tmp directory and files
 *.tmp
+# Build output
+/dist/
 # Test file
 /src/dev.ts
 /src/dev.**.ts
