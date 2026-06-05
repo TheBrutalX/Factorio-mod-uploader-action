@@ -5,18 +5,17 @@
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "outDir": "./dist",
+    "rootDir": "./src",
     "forceConsistentCasingInFileNames": true,
-    "baseUrl": "./src",
     "paths": {
-      "@/*": ["./*"],
-      "@phases/*": ["./phases/*"],
-      "@errors/*": ["./errors/*"],
-      "@interfaces/*": ["./interfaces/*"],
-      "@services/*": ["./services/*"],
-      "@types/*": ["./types/*"],
-      "@utils/*": ["./utils/*"],
-      "@constants": ["./constants"]
+      "@/*": ["./src/*"],
+      "@phases/*": ["./src/phases/*"],
+      "@errors/*": ["./src/errors/*"],
+      "@interfaces/*": ["./src/interfaces/*"],
+      "@services/*": ["./src/services/*"],
+      "@types/*": ["./src/types/*"],
+      "@utils/*": ["./src/utils/*"],
+      "@constants": ["./src/constants"]
     }
   },
   "include": ["src"],
