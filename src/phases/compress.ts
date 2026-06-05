@@ -1,6 +1,7 @@
 import * as core from '@actions/core';
-import { FACTORIOIGNORE_FILE_NAME, INPUT_DOTIGNORE_FILE, INPUT_MOD_FOLDER, INPUT_MOD_NAME, PROCESS_MOD_VERSION, PROCESS_ZIP_FILE } from '@constants';
+import { FACTORIOIGNORE_FILE_NAME, INPUT_AUTO_UPDATE_VERSION, INPUT_DOTIGNORE_FILE, INPUT_MOD_FOLDER, INPUT_MOD_NAME, PROCESS_GITHUB_REF, PROCESS_MOD_VERSION, PROCESS_ZIP_FILE } from '@constants';
 import { FactorioIgnoreParser } from '@services/FactorioIgnoreParser';
+import { FactorioModInfoParser } from '@services/FactorioModInfoParser';
 import { zipDirectory } from '@utils/zipper';
 import { existsSync } from 'fs';
 import fsp from 'fs/promises';
@@ -12,6 +13,7 @@ export default class CompressProcess extends BaseProcess {
     private modVersion: string = '';
     private tmpPath: string = '';
     private dotignorefile!: string;
+    private autoUpdateVersion: boolean = false;
 
     parseInputs(): void {
         this.modName = this.getInput(INPUT_MOD_NAME);
@@ -24,6 +26,7 @@ export default class CompressProcess extends BaseProcess {
             this.debug(`No ${INPUT_DOTIGNORE_FILE} specified, using default ${FACTORIOIGNORE_FILE_NAME}`);
             this.dotignorefile = FACTORIOIGNORE_FILE_NAME;
         }
+        this.autoUpdateVersion = this.getInputBoolen(INPUT_AUTO_UPDATE_VERSION, false);
     }
     async run(): Promise<void> {
         let dotignoreContent = '';
@@ -36,6 +39,23 @@ export default class CompressProcess extends BaseProcess {
         } else {
             dotignoreContent = await fsp.readFile(dotignorePath, 'utf8');
         }
+
+        // Auto-update version from GitHub release tag
+        if (this.autoUpdateVersion) {
+            const githubRef = process.env.GITHUB_REF || this.getInput(PROCESS_GITHUB_REF);
+            const version = this.extractVersionFromRef(githubRef);
+            if (version) {
+                this.info(`Auto-updating version to ${version} (from GITHUB_REF: ${githubRef})`);
+                const modInfoPath = path.normalize(path.join(this.modPath, 'mod_info.yml'));
+                const parser = await FactorioModInfoParser.fromFile(modInfoPath, this.modPath);
+                parser.updateVersion(version);
+                await parser.saveToFile(modInfoPath);
+                this.modVersion = version;
+            } else {
+                core.warning(`Could not extract version from GITHUB_REF: ${githubRef}. Falling back to existing version.`);
+            }
+        }
+
         const zipName = this.normalizedZipName();
         core.info(`Creating zip file: ${zipName}`);
         const zipDir = path.normalize(path.join(this.tmpPath, 'zip'));
@@ -60,5 +80,21 @@ export default class CompressProcess extends BaseProcess {
     private normalizedZipName(): string {
         const modName = this.modName.replace(/[^a-z0-9_-]/gi, '-');
         return `${modName}_${this.modVersion}.zip`;
+    }
+
+    /**
+     * Extract version tag from GITHUB_REF.
+     * Handles refs like 'refs/tags/v1.2.3' or 'refs/tags/1.2.3'.
+     */
+    private extractVersionFromRef(githubRef: string): string | null {
+        if (!githubRef) return null;
+        const tagMatch = githubRef.match(/^refs\/tags\/(.+)$/);
+        if (!tagMatch) return null;
+        let version = tagMatch[1];
+        // Strip leading 'v' if present (e.g., 'v1.2.3' -> '1.2.3')
+        if (version.startsWith('v')) {
+            version = version.slice(1);
+        }
+        return version;
     }
 }

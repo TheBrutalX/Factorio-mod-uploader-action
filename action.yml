@@ -27,6 +27,10 @@ inputs:
   zip-file:
     description: "Path to the zip file to upload"
     required: false
+  auto-update-version:
+    description: "Automatically update the version in mod_info.yml based on the GitHub release tag (e.g., 'v1.2.3' or '1.2.3'). Set to 'true' to enable."
+    required: false
+    default: ""
 runs:
   using: "node24"
   main: "dist/bundle.js"

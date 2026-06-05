@@ -1,7 +1,20 @@
 import { FactorioModInfoParser } from '@services/FactorioModInfoParser';
-import { promises as fs } from 'fs';
-import { tmpdir } from 'os';
-import { join } from 'path';
+
+jest.mock('fs', () => ({
+    existsSync: jest.fn()
+}));
+
+const mockReadFile = jest.fn();
+const mockWriteFile = jest.fn();
+const mockMkdir = jest.fn();
+const mockRm = jest.fn();
+
+jest.mock('fs/promises', () => ({
+    readFile: (...args: any[]) => mockReadFile(...args),
+    writeFile: (...args: any[]) => mockWriteFile(...args),
+    mkdir: (...args: any[]) => mockMkdir(...args),
+    rm: (...args: any[]) => mockRm(...args)
+}));
 
 jest.mock('@actions/core', () => {
     return {
@@ -16,17 +29,21 @@ jest.mock('@actions/core', () => {
 });
 
 describe('FactorioModInfoParser', () => {
-    let tempDir: string;
+    let tempDir: string = '/tmp/factorio-test';
 
-    beforeEach(async () => {
+    beforeEach(() => {
         process.env.GITHUB_REPOSITORY = 'test/repo';
         process.env.GITHUB_SERVER_URL = 'http://test.com';
-        tempDir = join(tmpdir(), 'factorio-test-' + Math.random());
-        await fs.mkdir(tempDir, { recursive: true });
+        mockReadFile.mockClear();
+        mockWriteFile.mockClear();
+        mockMkdir.mockClear();
+        mockRm.mockClear();
     });
 
     afterEach(async () => {
-        await fs.rm(tempDir, { recursive: true, force: true });
+        // Clean up temp directory using real fs
+        const { rm } = await import('fs/promises');
+        try { await rm(tempDir, { recursive: true, force: true }); } catch {}
     });
 
     describe('constructor', () => {
@@ -47,7 +64,7 @@ describe('FactorioModInfoParser', () => {
         });
 
         it('should validate valid config', async () => {
-            fs.readFile = jest.fn().mockResolvedValue('# Test Description');
+            mockReadFile.mockResolvedValue('# Test Description');
             const yaml = `
                 mod_info:
                     title: Test Mod
@@ -83,26 +100,24 @@ describe('FactorioModInfoParser', () => {
 
     describe('fromFile', () => {
         it('should create instance from file', async () => {
-            const filePath = join(tempDir, 'mod_info.yml');
-            await fs.writeFile(filePath, 'mod_info:\n  title: Test');
-            const parser = await FactorioModInfoParser.fromFile(filePath, '.');
+            mockReadFile.mockResolvedValue('mod_info:\n  title: Test');
+            const parser = await FactorioModInfoParser.fromFile('/some/path', '.');
             expect(parser).toBeInstanceOf(FactorioModInfoParser);
         });
 
         it('should handle non-existent file', async () => {
+            mockReadFile.mockResolvedValue('');
             const parser = await FactorioModInfoParser.fromFile('/non/existent/path', '.');
             expect(parser).toBeInstanceOf(FactorioModInfoParser);
         });
     });
 
-    describe('parsing', () => {
+     describe('parsing', () => {
         it('should parse description file', async () => {
-
-            const descPath = join(tempDir, 'desc.md');
-            await fs.writeFile(descPath, '# Test Description');
+            mockReadFile.mockResolvedValue('# Test Description');
             const yaml = `
                 mod_info:
-                    description_file: ${descPath}
+                    description_file: desc.md
             `;
 
             const parser = new FactorioModInfoParser(yaml, tempDir);
@@ -151,6 +166,43 @@ describe('FactorioModInfoParser', () => {
             const parser = new FactorioModInfoParser(yaml);
             await parser.validate();
             expect(parser.getFullInfo().tags).toEqual(["circuit-network", "logistic-network", "cheats" ]);
+        });
+    });
+
+    describe('updateVersion', () => {
+        it('should update version in mod_info', () => {
+            const yaml = `
+                mod_info:
+                    title: Test Mod
+            `;
+            const parser = new FactorioModInfoParser(yaml);
+            parser.updateVersion('2.0.0');
+            // Access internal yamlContent via any cast
+            expect((parser as any).yamlContent.version).toBe('2.0.0');
+        });
+
+        it('should create mod_info section if not present', () => {
+            const parser = new FactorioModInfoParser('');
+            parser.updateVersion('1.0.0');
+            expect((parser as any).yamlContent.mod_info).toBeDefined();
+            expect((parser as any).yamlContent.version).toBe('1.0.0');
+        });
+    });
+
+    describe('saveToFile', () => {
+        it('should save updated yaml to file', async () => {
+            mockWriteFile.mockResolvedValue(undefined);
+
+            const yaml = `
+                mod_info:
+                    title: Test Mod
+            `;
+            const parser = new FactorioModInfoParser(yaml);
+            parser.updateVersion('3.0.0');
+            const filePath = '/output/mod_info.yml';
+            await parser.saveToFile(filePath);
+
+            expect(mockWriteFile).toHaveBeenCalledWith(filePath, expect.stringContaining('version'), 'utf-8');
         });
     });
 });

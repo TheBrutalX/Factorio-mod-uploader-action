@@ -1,9 +1,9 @@
 import { IModInfo } from "@/interfaces/IFactorioModInfo";
 import { ValidateFactorioCategory, ValidateFactorioLicense, ValidateFactorioTags } from "@/types/FactorioTypes";
-import { error, warning } from "@actions/core";
+import { error, info, warning } from "@actions/core";
 import { existsSync } from "fs";
-import { readFile } from "fs/promises";
-import { load } from 'js-yaml';
+import { readFile, writeFile } from "fs/promises";
+import { dump, load } from 'js-yaml';
 import path from "path/posix";
 
 type ModInfoWrapper = {
@@ -208,6 +208,31 @@ export class FactorioModInfoParser {
             return new FactorioModInfoParser(content, modDir);
         } catch (error) {
             throw new Error(`Failed to read mod_info.yml: ${error}`);
+        }
+    }
+
+    /**
+     * Update the version field in mod_info.yml
+     * The version is stored at the top-level 'version' key of the YAML document.
+     */
+    public updateVersion(newVersion: string): void {
+        if (!this.yamlContent.mod_info) {
+            this.yamlContent.mod_info = {};
+        }
+        (this.yamlContent as any).version = newVersion;
+        info(`Version updated to ${newVersion}`);
+    }
+
+    /**
+     * Save the current YAML content back to the mod_info.yml file.
+     */
+    public async saveToFile(filePath: string): Promise<void> {
+        try {
+            const yamlString = dump(this.yamlContent);
+            await writeFile(filePath, yamlString, 'utf-8');
+            info(`mod_info.yml saved to ${filePath}`);
+        } catch (error) {
+            throw new Error(`Failed to save mod_info.yml: ${error}`);
         }
     }
 }
