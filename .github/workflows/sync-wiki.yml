@@ -19,8 +19,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Clone Wiki Repository
+        env:
+          # We use the built-in GITHUB_TOKEN to authenticate the clone/push
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git clone https://github.com/TheBrutalX/Factorio-mod-uploader-action.wiki.git wiki-git
+          # Authenticate using the token in the URL
+          git clone "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.wiki.git" wiki-git
           cd wiki-git
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -32,13 +36,15 @@ jobs:
           
           cd wiki-git
           
-          # Check if there are changes
-          if git diff --quiet; then
+          # Stage everything so git status/diff recognizes new files too
+          git add .
+          
+          # Check if there are actual staged changes to commit
+          if git diff --cached --quiet; then
             echo "No changes detected in wiki files."
             exit 0
           fi
           
           # Commit and push changes
-          git add .
           git commit -m "docs: sync wiki from docs/wiki [skip ci]"
           git push
