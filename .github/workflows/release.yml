@@ -65,7 +65,9 @@ jobs:
           git add -f dist/
           git add package-lock.json
           git commit -m 'chore(release): Added bundle.js [skip ci]' || echo "No changes to commit"
-          git push
+          # When triggered by tag push, we're in detached HEAD state.
+          # Push the committed bundle.js back to the same tag ref.
+          git push origin HEAD:refs/tags/${{ github.ref_name }}
 
       - name: Get version from tag
         id: version
