@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - 'v*'
+      - '[0-9]+.[0-9]+.[0-9]+'
     paths-ignore: 
       - '**.md'
 
@@ -66,7 +67,7 @@ jobs:
       - name: Get version from tag
         id: version
         run: |
-          # Extract version without 'v' prefix (e.g., 'v1.0.0' -> '1.0.0')
+          # Extract version, handling both 'v1.0.0' and '1.0.0' formats
           VERSION=${GITHUB_REF_NAME#v}
           echo "Version: $VERSION"
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
@@ -76,9 +77,18 @@ jobs:
           VERSION: ${{ steps.version.outputs.VERSION }}
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ env.VERSION }}
+          tag_name: ${{ github.ref_name }}
           name: Release v${{ env.VERSION }}
           generate_release_notes: true
+
+      - name: Commit bundle.js (if changed)
+        run: |
+          git add -f dist/
+          git add package-lock.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'chore(release): Added bundle.js [skip ci]'
+            git push
+          fi
 
       - name: Move latest tag to newest release
         env:
@@ -86,5 +96,5 @@ jobs:
         run: |
           git tag -d latest
           git push origin :latest
-          git tag -a latest -m "Latest release: v${{ env.VERSION }}"
+          git tag -a latest -m "Latest release: ${{ github.ref_name }}"
           git push origin latest
