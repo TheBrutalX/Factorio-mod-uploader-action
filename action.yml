@@ -28,5 +28,5 @@ inputs:
     description: "Path to the zip file to upload"
     required: false
 runs:
-  using: "node20"
+  using: "node24"
   main: "dist/bundle.js"
