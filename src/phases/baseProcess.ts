@@ -31,10 +31,10 @@ export default abstract class BaseProcess implements IBaseProcess {
     }
 
     private getEnvNameWithHyphen(envName: string): string {
-        return envName.replace(/-/g, '_').toUpperCase();
+        return envName.split('-').join('_').toUpperCase();
     }
     private getEnvNameWithUnderscore(envName: string): string {
-        return envName.replace(/_/g, '-').toUpperCase();
+        return envName.split('_').join('-').toUpperCase();
     }
 
     private environmentVariableExists(envName: string): boolean {
@@ -51,13 +51,11 @@ export default abstract class BaseProcess implements IBaseProcess {
             return hyphenName;
         } else if (this.environmentVariableExists(underscoreWithPrefix)) {
             return underscoreName;
-        } else {
-            if (!prefix) {
-                return this.getCorrectEnvName(envName, 'INPUT_');
-            } else {
+        } else if (prefix) {
                 return envName;
+            } else {
+                return this.getCorrectEnvName(envName, 'INPUT_');
             }
-        }
     }
 
     private findByKeyInsensitive(key: string): string | undefined {
@@ -81,31 +79,25 @@ export default abstract class BaseProcess implements IBaseProcess {
 
     protected debug(message: string): void {
         debug(message);
-        return;
     }
 
     protected info(message: string): void {
         info(message);
-        return;
     }
 
     protected warning(message: string): void {
         warning(message);
-        return;
     }
 
     protected error(message: string): void {
         error(message);
-        return;
     }
 
     protected exportVariable(name: string, value: string): void {
         exportVariable(name, value);
-        return;
     }
 
     protected setFailed(message: string): void {
         setFailed(message);
-        return;
     }
 }

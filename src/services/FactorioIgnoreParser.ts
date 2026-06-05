@@ -1,13 +1,13 @@
 import { warning } from "@actions/core";
 import { FACTORIOIGNORE_FILE_NAME } from "@constants";
 import { IFactorioIgnoreRule } from "@interfaces/IFactorioIgnoreRule";
-import { debug } from "console";
-import { promises as fs } from "fs";
-import { join } from "path/posix";
+import { debug } from "node:console";
+import { promises as fs } from "node:fs";
+import { join } from "node:path/posix";
 
 
 export class FactorioIgnoreParser {
-    private static readonly INVALID_CHART_FOR_LINE = /[^a-zA-Z0-9.*!\_\-?/\\]/g;
+    private static readonly INVALID_CHART_FOR_LINE = /[^a-zA-Z0-9.*!_\-?/\\]/g;
 
     private static readonly DEFAULT_PATTERNS: string[] = [
         FACTORIOIGNORE_FILE_NAME, // Ignore factorioignore file
@@ -57,7 +57,7 @@ export class FactorioIgnoreParser {
    */
     private sanitizePattern(pattern: string): string {
         return pattern.replace(FactorioIgnoreParser.INVALID_CHART_FOR_LINE, '') // Remove unsupported characters
-            .replace(/\\/g, '/') // Replace backslashes with forward slashes
+            .replaceAll('\\', '/') // Replace backslashes with forward slashes
             .toLocaleLowerCase(); // Convert to lowercase for case-insensitive matching
     }
     /**
@@ -65,7 +65,7 @@ export class FactorioIgnoreParser {
      * @param trimmedLine The trimmed pattern line from the ignore file.
      */
     private addPattern(trimmedLine: string): void {
-        const isNegated = trimmedLine[0] == '!';
+        const isNegated = trimmedLine.startsWith('!');
         let pattern = isNegated ? trimmedLine.substring(1).trim() : trimmedLine;
         if (pattern === '**') {
             // Match everything
@@ -76,15 +76,15 @@ export class FactorioIgnoreParser {
         }
         // Escape dots in the pattern
         pattern = pattern
-            .replace(/[.]/g, `\\.`) // Replace '.' with '\.'
-            .replace(/[?]/g, '.') // Replace '?' with '.'
+            .replaceAll(/[.]/g, String.raw`\.`) // Replace '.' with '\.'
+            .replaceAll(/[?]/g, '.'); // Replace '?' with '.'
         // Root-relative pattern
-        if (pattern[0] == '/') {
+        if (pattern.startsWith('/')) {
             pattern = pattern.replace(/^\//, '^');
         }
         // Match any directory depth, including the root directory
         if (pattern.startsWith('**/')) {
-            pattern = pattern.replace('**/', '(.*\\/)?');
+            pattern = pattern.replace('**/', String.raw`(.*\/) ?`);
         }
         // Match directories in the middle
         if (pattern.includes('/**/')) {
@@ -92,12 +92,12 @@ export class FactorioIgnoreParser {
         }
         // Match any character in a directory or file name
         if (pattern.endsWith('/**')) {
-            pattern = pattern.replace('/**', '(\/.*)?');
+            pattern = pattern.replace('/**', String.raw`(\/.)?`);
         }
 
         let escapedPattern = pattern
             .replace(/(?<!\.)\*/g, '.*') // Replace '*' with '.*'
-            .replace(/(?<!\\)\//g, '\\/') // Ensure directory separators are correct
+            .replace(/(?<!\\)\//g, String.raw`\/`); // Ensure directory separators are correct
 
         // Handle directory-specific patterns
         if (escapedPattern.endsWith('/')) {
@@ -204,8 +204,9 @@ export class FactorioIgnoreParser {
             if (stats.isDirectory()) {
                 const copied = await this.copyNonIgnoredFilesRecursive(filePath, destinationPath);
                 copiedFiles.push(...copied);
-            } else {
-                if (!this.shouldIgnore(filePath)) {
+            } else if (this.shouldIgnore(filePath)) {
+                    debug(`Ignoring file ${file}`);
+                } else {
                     if (!destinationDirCreated) {
                         await fs.mkdir(destination, {recursive: true});
                         destinationDirCreated = true;
@@ -213,10 +214,7 @@ export class FactorioIgnoreParser {
                     await fs.copyFile(filePath, destinationPath);
                     copiedFiles.push(filePath);
                     debug(`Copied file ${file} to ${destinationPath}`);
-                } else {
-                    debug(`Ignoring file ${file}`);
                 }
-            }
 
         }
         return copiedFiles;

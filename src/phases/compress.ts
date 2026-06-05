@@ -3,9 +3,9 @@ import { FACTORIOIGNORE_FILE_NAME, INPUT_AUTO_UPDATE_VERSION, INPUT_DOTIGNORE_FI
 import { FactorioIgnoreParser } from '@services/FactorioIgnoreParser';
 import { FactorioModInfoParser } from '@services/FactorioModInfoParser';
 import { zipDirectory } from '@utils/zipper';
-import { existsSync } from 'fs';
-import fsp from 'fs/promises';
-import { posix as path } from 'path';
+import { existsSync } from 'node:fs';
+import fsp from 'node:fs/promises';
+import { posix as path } from 'node:path';
 import BaseProcess from './baseProcess';
 export default class CompressProcess extends BaseProcess {
     private modName: string = '';
@@ -21,7 +21,7 @@ export default class CompressProcess extends BaseProcess {
         this.modVersion = this.getInput(PROCESS_MOD_VERSION);
         this.tmpPath = process.env.RUNNER_TEMP || '';
         if (!this.tmpPath) throw new Error('RUNNER-TEMP is required');
-        this.dotignorefile = this.getInput(INPUT_DOTIGNORE_FILE, false, undefined);
+        this.dotignorefile = this.getInput(INPUT_DOTIGNORE_FILE, false);
         if (!this.dotignorefile) {
             this.debug(`No ${INPUT_DOTIGNORE_FILE} specified, using default ${FACTORIOIGNORE_FILE_NAME}`);
             this.dotignorefile = FACTORIOIGNORE_FILE_NAME;
@@ -31,13 +31,13 @@ export default class CompressProcess extends BaseProcess {
     async run(): Promise<void> {
         let dotignoreContent = '';
         const dotignorePath = path.normalize(path.join(this.modPath, this.dotignorefile));
-        if (!existsSync(dotignorePath)) {
+        if (existsSync(dotignorePath)) {
+            dotignoreContent = await fsp.readFile(dotignorePath, 'utf8');
+        } else {
             core.warning(`No ${this.dotignorefile} found`);
             core.warning(`Please create a ${this.dotignorefile} file to specify which files to ignore`);
             core.warning(`For this action use the default ${FACTORIOIGNORE_FILE_NAME} file directive`);
             core.warning(`For more information visit the WIKI`);
-        } else {
-            dotignoreContent = await fsp.readFile(dotignorePath, 'utf8');
         }
 
         // Auto-update version from GitHub release tag
@@ -88,7 +88,7 @@ export default class CompressProcess extends BaseProcess {
      */
     private extractVersionFromRef(githubRef: string): string | null {
         if (!githubRef) return null;
-        const tagMatch = githubRef.match(/^refs\/tags\/(.+)$/);
+        const tagMatch = new RegExp(/^refs\/tags\/(.+)$/).exec(githubRef);
         if (!tagMatch) return null;
         let version = tagMatch[1];
         // Strip leading 'v' if present (e.g., 'v1.2.3' -> '1.2.3')

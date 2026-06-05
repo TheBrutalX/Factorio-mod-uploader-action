@@ -2,7 +2,7 @@ import { INPUT_FACTORIO_API_KEY, INPUT_MOD_FOLDER, INPUT_MOD_NAME, PROCESS_CREAT
 import { IModInfo } from '@interfaces/IFactorioModInfo';
 import { FactorioModInfoParser } from '@services/FactorioModInfoParser';
 import FactorioModPortalApiService from '@services/FactorioModPortalApiService';
-import { existsSync } from 'fs';
+import { existsSync } from 'node:fs';
 import BaseProcess from './baseProcess';
 
 export default class UploadProcess extends BaseProcess {
@@ -18,7 +18,6 @@ export default class UploadProcess extends BaseProcess {
         // From User
         this.modApiToken = this.getInput(INPUT_FACTORIO_API_KEY);
         // From Process
-        this.modInfo = {} as IModInfo;
         this.modName = this.getInput(INPUT_MOD_NAME);
         this.modPath = this.getInput(INPUT_MOD_FOLDER);
         this.modZipPath = this.getInput(PROCESS_ZIP_FILE);

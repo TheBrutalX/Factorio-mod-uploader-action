@@ -1,10 +1,10 @@
 import { IModInfo } from "@/interfaces/IFactorioModInfo";
 import { ValidateFactorioCategory, ValidateFactorioLicense, ValidateFactorioTags } from "@/types/FactorioTypes";
 import { error, info, warning } from "@actions/core";
-import { existsSync } from "fs";
-import { readFile, writeFile } from "fs/promises";
 import { dump, load } from 'js-yaml';
-import path from "path/posix";
+import { existsSync } from "node:fs";
+import { readFile, writeFile } from "node:fs/promises";
+import path from "node:path/posix";
 
 type ModInfoWrapper = {
     mod_info?: {
@@ -29,14 +29,14 @@ export class FactorioModInfoParser {
 
     constructor(content: string, modDir?: string) {
         try {
-            this.yamlContent = this.parseYaml(content) as ModInfoWrapper;
+            this.yamlContent = this.parseYaml(content);
             this.modInfo = {
                 category: undefined,
                 tags: [],
                 license: undefined,
                 description: undefined,
                 sourceLink: undefined,
-            } as IModInfo;
+            };
             if (!modDir) {
                 modDir = process.env.GITHUB_WORKSPACE || '';
             }
@@ -110,8 +110,10 @@ export class FactorioModInfoParser {
     * Parse the description file if it exists
     */
     private async parseDescription(): Promise<void> {
-        if (!this.yamlContent.mod_info?.description_file)
-            return this.modInfo.description = undefined;
+        if (!this.yamlContent.mod_info?.description_file) {
+            this.modInfo.description = undefined;
+            return;
+        }
         try {
             const descriptionFile = this.yamlContent.mod_info?.description_file;
             if (descriptionFile) {
@@ -128,8 +130,10 @@ export class FactorioModInfoParser {
     * Parse the title field
     */
     private async parseSummary(): Promise<void> {
-        if (!this.yamlContent.mod_info?.summary)
-            return this.modInfo.summary = undefined;
+        if (!this.yamlContent.mod_info?.summary){
+            this.modInfo.summary = undefined;
+            return;
+        }
         const summary = this.yamlContent.mod_info?.summary;
         this.modInfo.summary = summary;
     }
@@ -138,8 +142,10 @@ export class FactorioModInfoParser {
     * Parse the title field
     */
     private async parseTitle(): Promise<void> {
-        if (!this.yamlContent.mod_info?.title)
-            return this.modInfo.title = undefined;
+        if (!this.yamlContent.mod_info?.title) {
+            this.modInfo.title = undefined;
+            return;
+        }
         const title = this.yamlContent.mod_info?.title;
         this.modInfo.title = title;
     }
@@ -149,17 +155,21 @@ export class FactorioModInfoParser {
     */
 
     private async parseSourceLink(): Promise<void> {
-        if (!this.yamlContent.mod_info?.attach_source_link)
-            return this.modInfo.sourceLink = undefined;
+        if (!this.yamlContent.mod_info?.attach_source_link){
+            this.modInfo.sourceLink = undefined;
+            return;
+        }
         const githubRepo = process.env.GITHUB_REPOSITORY;
         const githubServerUrl = process.env.GITHUB_SERVER_URL;
         if (!githubRepo) {
             warning('GITHUB_REPOSITORY is not set');
-            return this.modInfo.sourceLink = undefined;
+            this.modInfo.sourceLink = undefined;
+            return;
         }
         if (!githubServerUrl) {
             warning('GITHUB_SERVER_URL is not set');
-            return this.modInfo.sourceLink = undefined;
+            this.modInfo.sourceLink = undefined;
+            return;
         }
         this.modInfo.sourceLink = `${githubServerUrl}/${githubRepo}`;
     }
@@ -168,8 +178,10 @@ export class FactorioModInfoParser {
     * Parse the license field
     */
     private async parseLicense(): Promise<void> {
-        if (!this.yamlContent.mod_info?.license)
-            return this.modInfo.license = undefined;
+        if (!this.yamlContent.mod_info?.license){
+            this.modInfo.license = undefined;
+            return;
+        }
         const license = this.yamlContent.mod_info?.license;
         this.modInfo.license = ValidateFactorioLicense(license);
     }
@@ -178,9 +190,11 @@ export class FactorioModInfoParser {
     * Parse the category field
     */
     private async parseCategory(): Promise<void> {
-        if (!this.yamlContent.mod_info?.category)
-            return this.modInfo.category = undefined;
-        this.modInfo.category = ValidateFactorioCategory(this.yamlContent.mod_info?.category!);
+        if (!this.yamlContent.mod_info?.category){
+            this.modInfo.category = undefined;
+            return;
+        }
+        this.modInfo.category = ValidateFactorioCategory(this.yamlContent.mod_info?.category);
     }
 
     /*
@@ -216,9 +230,7 @@ export class FactorioModInfoParser {
      * The version is stored at the top-level 'version' key of the YAML document.
      */
     public updateVersion(newVersion: string): void {
-        if (!this.yamlContent.mod_info) {
-            this.yamlContent.mod_info = {};
-        }
+        this.yamlContent.mod_info ??= {};
         (this.yamlContent as any).version = newVersion;
         info(`Version updated to ${newVersion}`);
     }

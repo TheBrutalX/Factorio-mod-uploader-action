@@ -3,8 +3,8 @@ import * as fmpe from '@errors/FactorioModPortalApiErrors';
 import { IModInfo } from '@interfaces/IFactorioModInfo';
 import axios, { AxiosError } from 'axios';
 import FormData from 'form-data';
-import { createReadStream } from 'fs';
-import { basename } from 'path';
+import { createReadStream } from 'node:fs';
+import { basename } from 'node:path';
 import { FactorioErrorResponse, FinishUploadResponse, InitPublishResponse, InitUploadResponse, ModInfo } from './interfaces';
 const modApiUrl = 'https://mods.factorio.com/api';
 

@@ -8,7 +8,7 @@ import ValidateProcess from '@phases/validate';
 export async function run(): Promise<boolean> {
     try {
         const action = getInput('action');
-        let instance: IBaseProcess = {} as IBaseProcess;
+        let instance: IBaseProcess;
         switch (action) {
             case 'validate':
                 instance = new ValidateProcess();
