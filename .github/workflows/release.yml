@@ -57,13 +57,6 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Commit bundle.js
-        run: |
-          git add -f dist/
-          git add package-lock.json
-          git commit -m 'chore(release): Added bundle.js [skip ci]'
-          git push
-
       - name: Get version from tag
         id: version
         run: |
