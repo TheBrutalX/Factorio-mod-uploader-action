@@ -1,0 +1,44 @@
+name: Sync Wiki
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/wiki/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync-wiki:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Clone Wiki Repository
+        run: |
+          git clone https://github.com/TheBrutalX/Factorio-mod-uploader-action.wiki.git wiki-git
+          cd wiki-git
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Sync Wiki Files
+        run: |
+          # Copy all markdown files from docs/wiki to the wiki repository
+          cp docs/wiki/*.md wiki-git/
+          
+          cd wiki-git
+          
+          # Check if there are changes
+          if git diff --quiet; then
+            echo "No changes detected in wiki files."
+            exit 0
+          fi
+          
+          # Commit and push changes
+          git add .
+          git commit -m "docs: sync wiki from docs/wiki [skip ci]"
+          git push
