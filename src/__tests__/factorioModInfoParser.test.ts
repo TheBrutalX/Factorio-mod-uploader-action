@@ -1,6 +1,6 @@
 import { FactorioModInfoParser } from '@services/FactorioModInfoParser';
 
-jest.mock('fs', () => ({
+jest.mock('node:fs', () => ({
     existsSync: jest.fn()
 }));
 
@@ -9,7 +9,7 @@ const mockWriteFile = jest.fn();
 const mockMkdir = jest.fn();
 const mockRm = jest.fn();
 
-jest.mock('fs/promises', () => ({
+jest.mock('node:fs/promises', () => ({
     readFile: (...args: any[]) => mockReadFile(...args),
     writeFile: (...args: any[]) => mockWriteFile(...args),
     mkdir: (...args: any[]) => mockMkdir(...args),
@@ -42,7 +42,7 @@ describe('FactorioModInfoParser', () => {
 
     afterEach(async () => {
         // Clean up temp directory using real fs
-        const { rm } = await import('fs/promises');
+        const { rm } = await import('node:fs/promises');
         try { await rm(tempDir, { recursive: true, force: true }); } catch {}
     });
 

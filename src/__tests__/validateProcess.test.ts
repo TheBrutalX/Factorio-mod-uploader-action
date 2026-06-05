@@ -3,7 +3,7 @@ import { INPUT_MOD_FOLDER, INPUT_MOD_NAME, PROCESS_MOD_VERSION } from '@constant
 import ValidateProcess from '@phases/validate';
 import FactorioModPortalApiService from '@services/FactorioModPortalApiService';
 import ActionHelper from '@utils/ActionHelper';
-import fs from 'fs';
+import fs from 'node:fs';
 
 jest.mock('@actions/core', () => {
     return {

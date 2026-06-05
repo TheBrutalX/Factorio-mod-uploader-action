@@ -78,32 +78,39 @@ export class FactorioIgnoreParser {
         pattern = pattern
             .replaceAll(/[.]/g, String.raw`\.`) // Replace '.' with '\.'
             .replaceAll(/[?]/g, '.'); // Replace '?' with '.'
+
+        let regexString: string;
+
         // Root-relative pattern
         if (pattern.startsWith('/')) {
-            pattern = pattern.replace(/^\//, '^');
+            let basePattern = pattern.substring(1);
+            // Convert **/ patterns first
+            if (basePattern.startsWith('**/')) {
+                basePattern = basePattern.replace('**/', '');
+            }
+            // Match from root only - exact match or directory with contents
+            const regexBase = this.convertPatternToRegex(basePattern);
+            // For patterns without trailing slash, match exact path only (no subpaths)
+            if (basePattern.endsWith('/')) {
+                regexString = `^${regexBase}($|/.*)`;
+            } else {
+                regexString = `^${regexBase}$`;
+            }
         }
         // Match any directory depth, including the root directory
-        if (pattern.startsWith('**/')) {
-            pattern = pattern.replace('**/', String.raw`(.*\/) ?`);
+        else if (pattern.startsWith('**/')) {
+            const basePattern = pattern.replace('**/', '');
+            regexString = this.convertPatternToRegex(basePattern);
         }
-        // Match directories in the middle
-        if (pattern.includes('/**/')) {
-            pattern = pattern.replace('/**/', '/(.*/)?');
-        }
-        // Match any character in a directory or file name
-        if (pattern.endsWith('/**')) {
-            pattern = pattern.replace('/**', String.raw`(\/.)?`);
+        else if (pattern.endsWith('/')) {
+            const dirName = pattern.slice(0, -1);
+            const regexBase = this.convertPatternToRegex(dirName);
+            // Match directory name at any level followed by /
+            regexString = `(^.*/)?${regexBase}($|/.*)`;
+        } else {
+            regexString = this.convertPatternToRegex(pattern);
         }
 
-        let escapedPattern = pattern
-            .replace(/(?<!\.)\*/g, '.*') // Replace '*' with '.*'
-            .replace(/(?<!\\)\//g, String.raw`\/`); // Ensure directory separators are correct
-
-        // Handle directory-specific patterns
-        if (escapedPattern.endsWith('/')) {
-            escapedPattern = escapedPattern.replace(/\/$/, '.*');
-        }
-        const regexString = `${escapedPattern}`;
         const checkIfExists = Array.from(this.patterns).find((p) => p.pattern === trimmedLine);
         if (checkIfExists) {
             return;
@@ -115,6 +122,37 @@ export class FactorioIgnoreParser {
             isNegated,
             regex: regex,
         });
+    }
+
+    /**
+     * Converts a pattern string to a regex pattern string.
+     * @param pattern The pattern string to convert.
+     * @returns The regex pattern string.
+     */
+    private convertPatternToRegex(pattern: string): string {
+        // Handle /**/ in middle
+        if (pattern.includes('/**/')) {
+            pattern = pattern.replace('/**/', '/(.*/)?');
+        }
+        // Match directories at end - must be a directory or contents inside it
+        if (pattern.endsWith('/**')) {
+            const dirPattern = pattern.replace('/**', '');
+            // This should match the directory itself OR anything inside it, but not a file named dir
+            // Pattern: (^|/)dir($|/) matches "dir" as a path component followed by end or slash
+            const regexBase = this.convertPatternToRegex(dirPattern);
+            return `(^|.*/)${regexBase}(/.*)$|^${regexBase}$`;
+        }
+
+        let escapedPattern = pattern
+            .replace(/(?<!\.)\*/g, '.*') // Replace '*' with '.*'
+            .replace(/(?<!\\)\//g, String.raw`\/`); // Ensure directory separators are correct
+
+        // Handle directory-specific patterns (trailing slash)
+        if (escapedPattern.endsWith('/')) {
+            escapedPattern = escapedPattern.replace(/\/$/, '.*($|/.*)');
+        }
+
+        return escapedPattern;
     }
     /**
      * Check if the opposite of the pattern exists in the list.
@@ -205,16 +243,16 @@ export class FactorioIgnoreParser {
                 const copied = await this.copyNonIgnoredFilesRecursive(filePath, destinationPath);
                 copiedFiles.push(...copied);
             } else if (this.shouldIgnore(filePath)) {
-                    debug(`Ignoring file ${file}`);
-                } else {
-                    if (!destinationDirCreated) {
-                        await fs.mkdir(destination, {recursive: true});
-                        destinationDirCreated = true;
-                    }
-                    await fs.copyFile(filePath, destinationPath);
-                    copiedFiles.push(filePath);
-                    debug(`Copied file ${file} to ${destinationPath}`);
+                debug(`Ignoring file ${file}`);
+            } else {
+                if (!destinationDirCreated) {
+                    await fs.mkdir(destination, { recursive: true });
+                    destinationDirCreated = true;
                 }
+                await fs.copyFile(filePath, destinationPath);
+                copiedFiles.push(filePath);
+                debug(`Copied file ${file} to ${destinationPath}`);
+            }
 
         }
         return copiedFiles;

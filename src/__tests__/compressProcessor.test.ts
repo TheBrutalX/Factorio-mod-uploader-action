@@ -2,9 +2,8 @@ import * as core from '@actions/core';
 import { INPUT_MOD_FOLDER, INPUT_MOD_NAME, PROCESS_MOD_VERSION, PROCESS_ZIP_FILE } from '@constants';
 import CompressProcess from '@phases/compress';
 import { zipDirectory } from '@utils/zipper';
-import { existsSync } from 'fs';
-import { rm } from 'fs/promises';
-import { posix as path } from 'path';
+import { rm } from 'node:fs/promises';
+import { posix as path } from 'node:path';
 
 jest.mock('@actions/core', () => {
     return {
@@ -17,16 +16,19 @@ jest.mock('@actions/core', () => {
         warning: jest.fn()
     }
 });
-jest.mock('fs/promises', () => ({
+jest.mock('node:fs/promises', () => ({
     rm: jest.fn(),
-    readFile: jest.fn(),
+    readFile: jest.fn(() => Promise.resolve('')),
     readdir: jest.fn(() => Promise.resolve(['file1.txt'])),
     mkdir: jest.fn(),
     stat: jest.fn(() => Promise.resolve({ isDirectory: () => false }))
 }));
-jest.mock('fs', () => ({
+jest.mock('node:fs', () => ({
     existsSync: jest.fn(() => true)
 }));
+
+// Access the mock function for control in tests
+const mockExistsSync = require('node:fs').existsSync as jest.Mock;
 jest.mock('@utils/zipper', () => ({
     zipDirectory: jest.fn()
 }));
@@ -66,9 +68,9 @@ describe('CompressProcess', () => {
         );
 
         (zipDirectory as jest.Mock).mockResolvedValue(
-            '/tmp/test-mod_1.0.0.zip'
+            path.join(process.env.RUNNER_TEMP || '/tmp', 'test-mod_1.0.0.zip')
         );
-        (existsSync as jest.Mock).mockReturnValue(true);
+        mockExistsSync.mockReturnValue(true);
         mockGetPatterns.mockReturnValue([]);
         compressProcess.parseInputs();
         const tmpPath = path.normalize('/tmp');
@@ -76,9 +78,12 @@ describe('CompressProcess', () => {
         (compressProcess as any)['tmpPath'] = tmpPath; // Set the tmpPath to the current path
         await compressProcess.run();
         expect(zipDirectory).toHaveBeenCalledWith(
+            // sonar-disable-next-line S5443 - Test file using mock paths, not real filesystem
             path.normalize('/tmp/zip'),
+            // sonar-disable-next-line S5443 - Test file using mock paths, not real filesystem
             path.normalize('/tmp/test-mod_1.0.0.zip')
         );
+        // sonar-disable-next-line S5443 - Test file using mock paths, not real filesystem
         expect(rm).toHaveBeenCalledWith(path.normalize('/tmp/zip'), { recursive: true });
         expect(core.info).toHaveBeenCalledWith(
             'Creating zip file: test-mod_1.0.0.zip'
