@@ -14,17 +14,17 @@ If all checks pass, it exports the mod name, version, and folder as environment 
 
 ### Input Parameters
 
-| Parameter    | Description                                      | Required | Default        |
-|--------------|--------------------------------------------------|----------|----------------|
+| Parameter    | Description                                             | Required | Default            |
+| ------------ | ------------------------------------------------------- | -------- | ------------------ |
 | `mod-folder` | Path to the mod folder (specify if not root of project) | No       | `GITHUB_WORKSPACE` |
 
 ### Output Variables
 
-| Variable     | Description                                      |
-|--------------|--------------------------------------------------|
-| `MOD_NAME`   | The name of the mod                              |
-| `MOD_VERSION`| The version of the mod                           |
-| `MOD_FOLDER` | The path to the mod folder                       |
+| Variable      | Description                |
+| ------------- | -------------------------- |
+| `MOD_NAME`    | The name of the mod        |
+| `MOD_VERSION` | The version of the mod     |
+| `MOD_FOLDER`  | The path to the mod folder |
 
 ---
 
@@ -40,21 +40,21 @@ The `Create zip` step packages your mod directory into a zip file. This is usefu
 
 ### Input Parameters
 
-| Parameter            | Description                                                                 | Required | Default           |
-|----------------------|-----------------------------------------------------------------------------|----------|-------------------|
-| `mod-name`           | The name of the mod                                                         | No*      | (from validate)   |
-| `mod-folder`         | Path to the mod folder                                                      | No*      | (from validate)   |
-| `mod-version`        | The version of the mod                                                      | No*      | (from validate)   |
-| `dotignore`          | Path to the `.ignore` file to use                                           | No       | `.factorioignore` |
-| `auto-update-version`| Automatically update the version in `mod_info.yml` based on the GitHub release tag (e.g., 'v1.2.3' or '1.2.3'). Set to `'true'` to enable. | No | `""` |
+| Parameter             | Description                                                                                                                                | Required | Default           |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | -------- | ----------------- |
+| `mod-name`            | The name of the mod                                                                                                                        | No\*     | (from validate)   |
+| `mod-folder`          | Path to the mod folder                                                                                                                     | No\*     | (from validate)   |
+| `mod-version`         | The version of the mod                                                                                                                     | No\*     | (from validate)   |
+| `dotignore`           | Path to the `.ignore` file to use                                                                                                          | No       | `.factorioignore` |
+| `auto-update-version` | Automatically update the version in `mod_info.yml` based on the GitHub release tag (e.g., 'v1.2.3' or '1.2.3'). Set to `'true'` to enable. | No       | `""`              |
 
 > **New in v2.0.5**: The `auto-update-version` parameter allows automatic version synchronization with your GitHub release tag. When enabled, the action extracts the version from `GITHUB_REF` and updates `mod_info.yml` before creating the zip.
 
 ### Output Variables
 
-| Variable     | Description                                      |
-|--------------|--------------------------------------------------|
-| `ZIP_FILE`   | The path to the created zip file                 |
+| Variable   | Description                      |
+| ---------- | -------------------------------- |
+| `ZIP_FILE` | The path to the created zip file |
 
 ---
 
@@ -69,16 +69,14 @@ The `Upload Mod` step uploads the created zip file to the Factorio Mod Portal. I
 
 ### Input Parameters
 
-| Parameter          | Description                                      | Required | Default        |
-|--------------------|--------------------------------------------------|----------|----------------|
-| `mod-name`         | The name of the mod                              | No*      | (from validate)|
-| `zip-file`         | The path to the zip file                         | No*      | (from compress)|
-| `factorio-api-key` | The API key for Factorio                         | **Yes**  |                |
-| `dotignore-file`   | File to ignore specific files during compress    | No       | `.factorioignore` |
-| `skip-update-details` | Skip the ModUpdateDetails API call (for tokens without edit_details permissions) | No | `false` |
+| Parameter          | Description                                   | Required | Default           |
+| ------------------ | --------------------------------------------- | -------- | ----------------- |
+| `mod-name`         | The name of the mod                           | No\*     | (from validate)   |
+| `zip-file`         | The path to the zip file                      | No\*     | (from compress)   |
+| `factorio-api-key` | The API key for Factorio                      | **Yes**  |                   |
+| `dotignore-file`   | File to ignore specific files during compress | No       | `.factorioignore` |
 
-> **Note**: Parameters marked with * can be inherited from previous steps' environment variables if not explicitly set.
-
+> **Note**: Parameters marked with \* can be inherited from previous steps' environment variables if not explicitly set.
 > **New in v2.0.6**: The `skip-update-details` parameter allows skipping the `ModUpdateDetails` API call. This is useful when your API token only has "Upload new mod releases" permissions and not "Edit mod details" permissions. The call is also automatically skipped when no `mod_info.yml` is present in the mod folder.
 
 ### Output Variables

@@ -10,9 +10,9 @@ In the provided `publish.yml` workflow file, the process is designed to automate
 name: Publish Factorio Mod
 
 on:
-  push:
-    branches:
-      - main
+    push:
+        branches:
+            - main
 ```
 
 - **`name`**: Assigns a name to the workflow, in this case, "Publish Factorio Mod".
@@ -22,8 +22,8 @@ on:
 
 ```yaml
 jobs:
-  publish-mod:
-    runs-on: ubuntu-latest
+    publish-mod:
+        runs-on: ubuntu-latest
 ```
 
 - **`jobs`**: Defines a set of tasks to be executed.
@@ -47,7 +47,7 @@ Utilizes the `actions/checkout` action to clone the repository's code onto the r
 - name: Validate Mod
   uses: TheBrutalX/factorio-mod-uploader-action@v2
   with:
-    action: validate
+      action: validate
 ```
 
 Employs the `factorio-mod-uploader-action` with the `validate` action to ensure the mod meets necessary criteria.
@@ -58,7 +58,7 @@ Employs the `factorio-mod-uploader-action` with the `validate` action to ensure 
 - name: Create zip
   uses: TheBrutalX/factorio-mod-uploader-action@v2
   with:
-    action: compress
+      action: compress
 ```
 
 Uses the same action with the `compress` parameter to package the mod into a ZIP file, preparing it for upload.
@@ -69,8 +69,8 @@ Uses the same action with the `compress` parameter to package the mod into a ZIP
 - name: Upload Mod
   uses: TheBrutalX/factorio-mod-uploader-action@v2
   with:
-    action: upload
-    factorio-api-key: ${{ secrets.FACTORIO_API_KEY }}
+      action: upload
+      factorio-api-key: ${{ secrets.FACTORIO_API_KEY }}
 ```
 
 Utilizes the action with the `upload` parameter to send the compressed mod to the Factorio Mod Portal. It securely accesses the Factorio API key stored in the repository's secrets.
@@ -83,32 +83,32 @@ By structuring the workflow in this manner, the process of validating, compressi
 name: Publish Factorio Mod
 
 on:
-  push:
-    branches:
-      - main
+    push:
+        branches:
+            - main
 
 jobs:
-  publish-mod:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+    publish-mod:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout Repository
+              uses: actions/checkout@v4
 
-      - name: Validate Mod
-        uses: TheBrutalX/factorio-mod-uploader-action@v2
-        with:
-          action: validate
+            - name: Validate Mod
+              uses: TheBrutalX/factorio-mod-uploader-action@v2
+              with:
+                  action: validate
 
-      - name: Create zip
-        uses: TheBrutalX/factorio-mod-uploader-action@v2
-        with:
-          action: compress
+            - name: Create zip
+              uses: TheBrutalX/factorio-mod-uploader-action@v2
+              with:
+                  action: compress
 
-      - name: Upload Mod
-        uses: TheBrutalX/factorio-mod-uploader-action@v2
-        with:
-          action: upload
-          factorio-api-key: ${{ secrets.FACTORIO_API_KEY }}
+            - name: Upload Mod
+              uses: TheBrutalX/factorio-mod-uploader-action@v2
+              with:
+                  action: upload
+                  factorio-api-key: ${{ secrets.FACTORIO_API_KEY }}
 ```
 
 ## Advanced Example with Auto-Update Version (v2.0.5+)
@@ -119,35 +119,35 @@ The latest version introduces the `auto-update-version` feature, which automatic
 name: Publish Factorio Mod
 
 on:
-  push:
-    branches:
-      - main
-  release:
-    types: [published]
+    push:
+        branches:
+            - main
+    release:
+        types: [published]
 
 jobs:
-  publish-mod:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+    publish-mod:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout Repository
+              uses: actions/checkout@v4
 
-      - name: Validate Mod
-        uses: TheBrutalX/factorio-mod-uploader-action@v2
-        with:
-          action: validate
+            - name: Validate Mod
+              uses: TheBrutalX/factorio-mod-uploader-action@v2
+              with:
+                  action: validate
 
-      - name: Create zip
-        uses: TheBrutalX/factorio-mod-uploader-action@v2
-        with:
-          action: compress
-          auto-update-version: 'true'
+            - name: Create zip
+              uses: TheBrutalX/factorio-mod-uploader-action@v2
+              with:
+                  action: compress
+                  auto-update-version: 'true'
 
-      - name: Upload Mod
-        uses: TheBrutalX/factorio-mod-uploader-action@v2
-        with:
-          action: upload
-          factorio-api-key: ${{ secrets.FACTORIO_API_KEY }}
+            - name: Upload Mod
+              uses: TheBrutalX/factorio-mod-uploader-action@v2
+              with:
+                  action: upload
+                  factorio-api-key: ${{ secrets.FACTORIO_API_KEY }}
 ```
 
 > **New in v2.0.5**: When `auto-update-version` is set to `'true'`, the action extracts the version from the GitHub release tag (e.g., `v1.2.3`) and updates `mod_info.yml` before creating the zip file. This ensures your mod version always matches your GitHub release version.
@@ -185,5 +185,3 @@ To safely use the API key in your GitHub Actions workflow:
 3. Click **New repository secret**.
 4. Name the secret `FACTORIO_API_KEY`.
 5. Paste your API key into the value field and save.
-
-

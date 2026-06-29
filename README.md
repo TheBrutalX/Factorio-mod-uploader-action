@@ -1,4 +1,4 @@
-[![Release](https://github.com/TheBrutalX/factorio-mod-uploader-action/actions/workflows/release.yml/badge.svg?branch=main)](https://github.com/TheBrutalX/factorio-mod-uploader-action/actions/workflows/release.yml) [![CodeQL Advanced](https://github.com/TheBrutalX/Factorio-mod-uploader-action/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/TheBrutalX/Factorio-mod-uploader-action/actions/workflows/codeql.yml)
+[![Release](https://github.com/TheBrutalX/Factorio-mod-uploader-action/actions/workflows/release.yml/badge.svg)](https://github.com/TheBrutalX/Factorio-mod-uploader-action/actions/workflows/release.yml) [![CodeQL Advanced](https://github.com/TheBrutalX/Factorio-mod-uploader-action/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/TheBrutalX/Factorio-mod-uploader-action/actions/workflows/codeql.yml)
 
 # Factorio Mod Uploader - GitHub Action
 
@@ -92,6 +92,7 @@ jobs:
 This is the basic version, for the specific option see the detail of each step
 
 If you need to understand the file I have written a guide in the [Wiki](https://github.com/TheBrutalX/Factorio-mod-uploader-action/wiki/WorkFlow-detail)
+
 ## Step overview
 
 See all the details of each step in the [Wiki](https://github.com/TheBrutalX/Factorio-mod-uploader-action/wiki/Avaible-Actions)
