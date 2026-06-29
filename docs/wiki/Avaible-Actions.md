@@ -75,11 +75,12 @@ The `Upload Mod` step uploads the created zip file to the Factorio Mod Portal. I
 | `zip-file`         | The path to the zip file                         | No*      | (from compress)|
 | `factorio-api-key` | The API key for Factorio                         | **Yes**  |                |
 | `dotignore-file`   | File to ignore specific files during compress    | No       | `.factorioignore` |
+| `skip-update-details` | Skip the ModUpdateDetails API call (for tokens without edit_details permissions) | No | `false` |
 
 > **Note**: Parameters marked with * can be inherited from previous steps' environment variables if not explicitly set.
+
+> **New in v2.0.6**: The `skip-update-details` parameter allows skipping the `ModUpdateDetails` API call. This is useful when your API token only has "Upload new mod releases" permissions and not "Edit mod details" permissions. The call is also automatically skipped when no `mod_info.yml` is present in the mod folder.
 
 ### Output Variables
 
 None
-
-

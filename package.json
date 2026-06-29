@@ -1,6 +1,6 @@
 {
     "name": "factorio-release-action",
-    "version": "2.0.3",
+    "version": "2.0.6",
     "description": "Automated process for automatic release factorio mod",
     "main": "dist/bundle.js",
     "scripts": {
@@ -21,7 +21,7 @@
         "@types/node": "^24.10.1",
         "@types/semver": "^7.5.8",
         "jest": "^29.7.0",
-        "js-yaml": "^4.1.0",
+        "js-yaml": "^4.2.0",
         "prettier": "^3.3.3",
         "ts-jest": "^29.4.11",
         "ts-loader": "^9.5.1",
@@ -37,5 +37,8 @@
         "axios": "^1.7.7",
         "form-data": "^4.0.6",
         "semver": "^7.6.3"
+    },
+    "overrides": {
+        "js-yaml": "^4.2.0"
     }
 }
