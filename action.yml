@@ -31,6 +31,10 @@ inputs:
     description: "Automatically update the version in mod_info.yml based on the GitHub release tag (e.g., 'v1.2.3' or '1.2.3'). Set to 'true' to enable."
     required: false
     default: ""
+  skip-update-details:
+    description: "Skip the ModUpdateDetails API call (for tokens without edit_details permissions)"
+    required: false
+    default: "false"
 runs:
   using: "node24"
   main: "dist/bundle.js"

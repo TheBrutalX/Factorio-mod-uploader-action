@@ -1,4 +1,4 @@
-import { INPUT_FACTORIO_API_KEY, INPUT_MOD_FOLDER, INPUT_MOD_NAME, PROCESS_CREATE_ON_PORTAL, PROCESS_ZIP_FILE } from '@constants';
+import { INPUT_FACTORIO_API_KEY, INPUT_MOD_FOLDER, INPUT_MOD_NAME, INPUT_SKIP_UPDATE_DETAILS, PROCESS_CREATE_ON_PORTAL, PROCESS_ZIP_FILE } from '@constants';
 import { IModInfo } from '@interfaces/IFactorioModInfo';
 import { FactorioModInfoParser } from '@services/FactorioModInfoParser';
 import FactorioModPortalApiService from '@services/FactorioModPortalApiService';
@@ -11,6 +11,8 @@ export default class UploadProcess extends BaseProcess {
     private modZipPath: string = '';
     private modApiToken: string = '';
     private createOnPortal: boolean = false;
+    private skipUpdateDetails: boolean = false;
+    private hasModInfo: boolean = false;
 
     private modInfo!: IModInfo;
 
@@ -22,6 +24,10 @@ export default class UploadProcess extends BaseProcess {
         this.modPath = this.getInput(INPUT_MOD_FOLDER);
         this.modZipPath = this.getInput(PROCESS_ZIP_FILE);
         this.createOnPortal = this.getInputBoolen(PROCESS_CREATE_ON_PORTAL, false);
+        this.skipUpdateDetails = this.getInputBoolen(INPUT_SKIP_UPDATE_DETAILS, false, false);
+        // Auto-detect if mod_info.yml exists
+        const modInfoPath = `${this.modPath}/mod_info.yml`;
+        this.hasModInfo = existsSync(modInfoPath);
 
         if (existsSync(this.modZipPath) === false) {
             throw new Error(`File not found: '${this.modZipPath}', please check the path or check if the compress action is running before this action`);
@@ -41,7 +47,9 @@ export default class UploadProcess extends BaseProcess {
             this.debug("Mod is set to be uploaded to the portal");
             await this.uploadModFlow();
         }
-        await this.updateDetails();
+        if (!this.skipUpdateDetails && this.hasModInfo) {
+            await this.updateDetails();
+        }
     }
 
     private async parseModInfo(): Promise<IModInfo> {

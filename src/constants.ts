@@ -4,6 +4,7 @@ export const INPUT_MOD_NAME = 'MOD_NAME';
 export const INPUT_DOTIGNORE_FILE = 'DOTIGNORE_FILE';
 export const INPUT_FACTORIO_API_KEY = 'FACTORIO_API_KEY';
 export const INPUT_AUTO_UPDATE_VERSION = 'AUTO_UPDATE_VERSION';
+export const INPUT_SKIP_UPDATE_DETAILS = 'SKIP_UPDATE_DETAILS';
 //#endregion Environment Input from GitHub Actions
 
 //#region Environment using for process into GitHub Actions
