@@ -40,7 +40,6 @@ export function ValidateFactorioCategory(category: string): FactorioModCategoryT
 export type FactorioModTagType =
     | "transportation"
     | "logistics"
-    | "pipes"
     | "trains"
     | "combat"
     | "armor"
@@ -59,7 +58,6 @@ export type FactorioModTagType =
 export const FactorioModTags: FactorioModTagType[] = [
     "transportation",
     "logistics",
-    "pipes",
     "trains",
     "combat",
     "armor",
