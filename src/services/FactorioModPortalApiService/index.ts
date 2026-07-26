@@ -19,7 +19,7 @@ export default class FactorioModPortalApiService {
             return false;
         } catch (error) {
             if (error instanceof AxiosError) {
-                if (error.response?.status === 404 || error.code == '404') return false;
+                if (error.response?.status === 404) return false;
                 throw new fmpe.FactorioModPortalApiError('Unknown error', error.stack);
             }
             throw new Error(`Error fetching mod info: ${error}`);
