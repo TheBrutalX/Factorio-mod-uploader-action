@@ -58,7 +58,7 @@ export class FactorioIgnoreParser {
     private sanitizePattern(pattern: string): string {
         return pattern.replace(FactorioIgnoreParser.INVALID_CHART_FOR_LINE, '') // Remove unsupported characters
             .replaceAll('\\', '/') // Replace backslashes with forward slashes
-            .toLocaleLowerCase(); // Convert to lowercase for case-insensitive matching
+            .toLowerCase(); // Convert to lowercase for case-insensitive matching
     }
     /**
      * Adds a single pattern to the list after converting it to a regex.
