@@ -39,6 +39,15 @@ describe('FactorioModPortalApiService', () => {
             expect(result).toBe(false);
         });
 
+        it('should throw for non-404 Axios errors', async () => {
+            const response = { data: {}, status: 500, statusText: 'Server Error' } as AxiosResponse;
+            const error = new AxiosError();
+            error.response = response;
+            mockedAxios.get.mockRejectedValueOnce(error);
+            await expect(FactorioModPortalApiService.CheckIfModIsPublished('test-mod'))
+                .rejects.toThrow(fmpe.FactorioModPortalApiError);
+        });
+
         it('should re-throw non-Axios errors', async () => {
             mockedAxios.get.mockRejectedValueOnce(new Error('Network failure'));
             await expect(FactorioModPortalApiService.CheckIfModIsPublished('test-mod'))

@@ -53,7 +53,11 @@ describe('FactorioModInfoParser', () => {
         });
 
         it('should throw error on invalid YAML', () => {
-            expect(() => new FactorioModInfoParser('invalid: yaml: content:')).toThrow();
+            expect(() => new FactorioModInfoParser('%%INVALID[YAML]::')).toThrow();
+        });
+
+        it('should throw error on YAML with syntax error', () => {
+            expect(() => new FactorioModInfoParser('key: [value] extra')).toThrow();
         });
     });
 
@@ -109,6 +113,14 @@ describe('FactorioModInfoParser', () => {
             mockReadFile.mockResolvedValue('');
             const parser = await FactorioModInfoParser.fromFile('/non/existent/path', '.');
             expect(parser).toBeInstanceOf(FactorioModInfoParser);
+        });
+
+        it('should throw when file read fails', async () => {
+            const { existsSync } = require('node:fs');
+            (existsSync as jest.Mock).mockReturnValue(true);
+            mockReadFile.mockRejectedValue(new Error('Permission denied'));
+            await expect(FactorioModInfoParser.fromFile('/some/path', '.'))
+                .rejects.toThrow('Failed to read mod_info.yml');
         });
     });
 
@@ -216,6 +228,15 @@ describe('FactorioModInfoParser', () => {
             await parser.saveToFile(filePath);
 
             expect(mockWriteFile).toHaveBeenCalledWith(filePath, expect.stringContaining('version'), 'utf-8');
+        });
+
+        it('should throw when write fails', async () => {
+            mockWriteFile.mockRejectedValue(new Error('Disk full'));
+
+            const parser = new FactorioModInfoParser('');
+            await expect(parser.saveToFile('/output/mod_info.yml')).rejects.toThrow(
+                'Failed to save mod_info.yml'
+            );
         });
     });
 });
