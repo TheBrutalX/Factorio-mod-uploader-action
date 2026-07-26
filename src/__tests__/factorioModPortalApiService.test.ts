@@ -104,11 +104,53 @@ describe('FactorioModPortalApiService', () => {
         });
     });
 
+    describe('ModUploadFinish', () => {
+        it('should complete upload successfully', async () => {
+            mockedAxios.post.mockResolvedValueOnce({ data: { success: true } });
+            await expect(FactorioModPortalApiService.ModUploadFinish('token', 'upload-url', '/path/to/mod.zip'))
+                .resolves.not.toThrow();
+        });
+
+        it('should throw error on upload failure', async () => {
+            mockedAxios.post.mockResolvedValueOnce({ data: { success: false, message: 'Upload failed' } });
+            await expect(FactorioModPortalApiService.ModUploadFinish('token', 'upload-url', '/path/to/mod.zip'))
+                .rejects.toThrow('Failed to upload mod: Upload failed');
+        });
+    });
+
     describe('ModPublishInit', () => {
         it('should return upload url', async () => {
             mockedAxios.post.mockResolvedValueOnce({ data: { upload_url: 'test-url' } });
             const result = await FactorioModPortalApiService.ModPublishInit('token', 'test-mod');
             expect(result).toBe('test-url');
+        });
+    });
+
+    describe('ModPublishFinish', () => {
+        it('should publish mod successfully with minimal fields', async () => {
+            mockedAxios.post.mockResolvedValueOnce({ data: { success: true } });
+            const modInfo: IModInfo = {};
+            await expect(FactorioModPortalApiService.ModPublishFinish('token', 'upload-url', modInfo, '/path/to/mod.zip'))
+                .resolves.not.toThrow();
+        });
+
+        it('should publish mod successfully with all optional fields', async () => {
+            mockedAxios.post.mockResolvedValueOnce({ data: { success: true } });
+            const modInfo: IModInfo = {
+                description: 'Test description',
+                license: 'default_mit',
+                sourceLink: 'https://github.com/user/repo',
+                category: 'internal',
+            };
+            await expect(FactorioModPortalApiService.ModPublishFinish('token', 'upload-url', modInfo, '/path/to/mod.zip'))
+                .resolves.not.toThrow();
+        });
+
+        it('should throw error on publish failure', async () => {
+            mockedAxios.post.mockResolvedValueOnce({ data: { success: false, message: 'Publish failed' } });
+            const modInfo: IModInfo = {};
+            await expect(FactorioModPortalApiService.ModPublishFinish('token', 'upload-url', modInfo, '/path/to/mod.zip'))
+                .rejects.toThrow('Failed to publish mod: Publish failed');
         });
     });
 
@@ -139,6 +181,9 @@ describe('FactorioModPortalApiService', () => {
             { error: 'InternalError', expectedError: fmpe.FactorioModPortalApiInternalError },
             { error: 'Forbidden', expectedError: fmpe.FactorioModPortalApiForbiddenError },
             { error: 'UnknownMod', expectedError: fmpe.FactorioModPortalApiModNotFoundError },
+            { error: 'InvalidModRelease', expectedError: fmpe.FactorioModPortalApiInvalidModReleaseError },
+            { error: 'InvalidModUpload', expectedError: fmpe.FactorioModPortalApiInvalidUploadError },
+            { error: 'ModAlreadyExists', expectedError: fmpe.FactorioModPortalApiModAlreadyExistsError },
             { error: 'Unknown', expectedError: fmpe.FactorioModPortalApiUnknownError }
         ];
 
@@ -151,6 +196,60 @@ describe('FactorioModPortalApiService', () => {
                 expect(() => FactorioModPortalApiService.HandleFactorioModPortalApiError(axiosError))
                     .toThrow(expectedError);
             });
+        });
+
+        it('should throw FactorioModPortalApiError on connection refused', () => {
+            const axiosError: any = {
+                code: 'ECONNREFUSED',
+                stack: 'error stack'
+            };
+            expect(() => FactorioModPortalApiService.HandleFactorioModPortalApiError(axiosError))
+                .toThrow(fmpe.FactorioModPortalApiError);
+        });
+
+        it('should throw FactorioModPortalApiError on network error', () => {
+            const axiosError: any = {
+                code: 'ERR_NETWORK',
+                stack: 'error stack'
+            };
+            expect(() => FactorioModPortalApiService.HandleFactorioModPortalApiError(axiosError))
+                .toThrow(fmpe.FactorioModPortalApiError);
+        });
+
+        it('should throw FactorioModPortalApiError on connection aborted', () => {
+            const axiosError: any = {
+                code: 'ECONNABORTED',
+                stack: 'error stack'
+            };
+            expect(() => FactorioModPortalApiService.HandleFactorioModPortalApiError(axiosError))
+                .toThrow(fmpe.FactorioModPortalApiError);
+        });
+
+        it('should throw FactorioModPortalApiError when response is undefined', () => {
+            const axiosError: any = {
+                response: undefined,
+                stack: 'error stack'
+            };
+            expect(() => FactorioModPortalApiService.HandleFactorioModPortalApiError(axiosError))
+                .toThrow(fmpe.FactorioModPortalApiError);
+        });
+
+        it('should throw FactorioModPortalApiInternalError on status 500', () => {
+            const axiosError: any = {
+                response: { status: 500, data: {} },
+                stack: 'error stack'
+            };
+            expect(() => FactorioModPortalApiService.HandleFactorioModPortalApiError(axiosError))
+                .toThrow(fmpe.FactorioModPortalApiInternalError);
+        });
+
+        it('should throw FactorioModPortalApiError when error response has no data', () => {
+            const axiosError: any = {
+                response: { status: 400, data: undefined },
+                stack: 'error stack'
+            };
+            expect(() => FactorioModPortalApiService.HandleFactorioModPortalApiError(axiosError))
+                .toThrow(fmpe.FactorioModPortalApiError);
         });
     });
 });
