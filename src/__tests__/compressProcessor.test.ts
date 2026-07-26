@@ -42,6 +42,23 @@ jest.mock('@services/FactorioIgnoreParser', () => ({
     }))
 }));
 
+const mockUpdateVersion = jest.fn();
+const mockSaveToFile = jest.fn();
+const mockValidate = jest.fn();
+const mockGetFullInfo = jest.fn();
+const mockParserInstance = {
+    updateVersion: mockUpdateVersion,
+    saveToFile: mockSaveToFile,
+    validate: mockValidate,
+    getFullInfo: mockGetFullInfo,
+};
+jest.mock('@services/FactorioModInfoParser', () => ({
+    FactorioModInfoParser: Object.assign(
+        jest.fn(() => mockParserInstance),
+        { fromFile: jest.fn(() => Promise.resolve(mockParserInstance)) }
+    ),
+}));
+
 describe('CompressProcess', () => {
     let compressProcess: CompressProcess;
 
@@ -165,6 +182,88 @@ describe('CompressProcess', () => {
             const helper = new CompressProcess();
             const version = (helper as any).extractVersionFromRef('');
             expect(version).toBeNull();
+        });
+    });
+
+    describe('run with autoUpdateVersion', () => {
+        beforeEach(() => {
+            jest.spyOn(compressProcess as any, 'getInput').mockImplementation(
+                (name: any) => {
+                    switch (name) {
+                        case INPUT_MOD_NAME:
+                            return 'test-mod';
+                        case INPUT_MOD_FOLDER:
+                            return '/folder';
+                        case PROCESS_MOD_VERSION:
+                            return '1.0.0';
+                        default:
+                            return '';
+                    }
+                }
+            );
+            mockExistsSync.mockReturnValue(true);
+            mockGetPatterns.mockReturnValue([]);
+            (zipDirectory as jest.Mock).mockResolvedValue('/tmp/test-mod_1.0.0.zip');
+            mockUpdateVersion.mockClear();
+            mockSaveToFile.mockClear();
+        });
+
+        it('should update version from GITHUB_REF with v prefix', async () => {
+            process.env.GITHUB_REF = 'refs/tags/v2.0.4';
+            jest.spyOn(compressProcess as any, 'getInputBoolean').mockReturnValue(true);
+            compressProcess.parseInputs();
+            const tmpPath = path.normalize('/tmp');
+            (compressProcess as any)['tmpPath'] = tmpPath;
+
+            await compressProcess.run();
+
+            expect(mockUpdateVersion).toHaveBeenCalledWith('2.0.4');
+            expect(mockSaveToFile).toHaveBeenCalled();
+            expect(core.info).toHaveBeenCalledWith(
+                'Auto-updating version to 2.0.4 (from GITHUB_REF: refs/tags/v2.0.4)'
+            );
+        });
+
+        it('should update version from GITHUB_REF without v prefix', async () => {
+            process.env.GITHUB_REF = 'refs/tags/2.0.4';
+            jest.spyOn(compressProcess as any, 'getInputBoolean').mockReturnValue(true);
+            compressProcess.parseInputs();
+            const tmpPath = path.normalize('/tmp');
+            (compressProcess as any)['tmpPath'] = tmpPath;
+
+            await compressProcess.run();
+
+            expect(mockUpdateVersion).toHaveBeenCalledWith('2.0.4');
+            expect(core.info).toHaveBeenCalledWith(
+                'Auto-updating version to 2.0.4 (from GITHUB_REF: refs/tags/2.0.4)'
+            );
+        });
+
+        it('should warn when GITHUB_REF is not a tag ref', async () => {
+            process.env.GITHUB_REF = 'refs/heads/main';
+            jest.spyOn(compressProcess as any, 'getInputBoolean').mockReturnValue(true);
+            compressProcess.parseInputs();
+            const tmpPath = path.normalize('/tmp');
+            (compressProcess as any)['tmpPath'] = tmpPath;
+
+            await compressProcess.run();
+
+            expect(mockUpdateVersion).not.toHaveBeenCalled();
+            expect(core.warning).toHaveBeenCalledWith(
+                expect.stringContaining('Could not extract version from GITHUB_REF')
+            );
+        });
+
+        it('should not auto-update when autoUpdateVersion is false', async () => {
+            process.env.GITHUB_REF = 'refs/tags/v2.0.4';
+            jest.spyOn(compressProcess as any, 'getInputBoolean').mockReturnValue(false);
+            compressProcess.parseInputs();
+            const tmpPath = path.normalize('/tmp');
+            (compressProcess as any)['tmpPath'] = tmpPath;
+
+            await compressProcess.run();
+
+            expect(mockUpdateVersion).not.toHaveBeenCalled();
         });
     });
 });
