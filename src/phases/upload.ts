@@ -14,7 +14,8 @@ export default class UploadProcess extends BaseProcess {
     private skipUpdateDetails: boolean = false;
     private hasModInfo: boolean = false;
 
-    private modInfo!: IModInfo;
+    private _modInfo: IModInfo | null = null;
+    private _modInfoParsed = false;
 
     public parseInputs(): void {
         // From User
@@ -35,7 +36,6 @@ export default class UploadProcess extends BaseProcess {
     }
 
     public async run(): Promise<void> {
-        this.modInfo = await this.parseModInfo();
         const modExists = await FactorioModPortalApiService.CheckIfModIsPublished(this.modName);
         if (modExists && this.createOnPortal) {
             throw new Error(`Mod ${this.modName} already exists on the portal, please check the name`);
@@ -52,6 +52,14 @@ export default class UploadProcess extends BaseProcess {
         }
     }
 
+    private async getModInfo(): Promise<IModInfo> {
+        if (!this._modInfoParsed) {
+            this._modInfo = await this.parseModInfo();
+            this._modInfoParsed = true;
+        }
+        return this._modInfo!;
+    }
+
     private async parseModInfo(): Promise<IModInfo> {
         this.debug(`Parsing mod info from ${this.modPath}`);
         const modInfoPath = `${this.modPath}/mod_info.yml`;
@@ -65,8 +73,9 @@ export default class UploadProcess extends BaseProcess {
     }
 
     private async createModFlow(): Promise<void> {
+        const modInfo = await this.getModInfo();
         const initPublishUrl = await FactorioModPortalApiService.ModPublishInit(this.modApiToken, this.modName);
-        await FactorioModPortalApiService.ModPublishFinish(this.modApiToken, initPublishUrl, this.modInfo, this.modZipPath);
+        await FactorioModPortalApiService.ModPublishFinish(this.modApiToken, initPublishUrl, modInfo, this.modZipPath);
         this.info(`Mod ${this.modName} created successfully on mod Portal`);
     }
 
@@ -77,6 +86,7 @@ export default class UploadProcess extends BaseProcess {
     }
 
     private async updateDetails(): Promise<void> {
-        await FactorioModPortalApiService.ModUpdateDetails(this.modApiToken, this.modName, this.modInfo);
+        const modInfo = await this.getModInfo();
+        await FactorioModPortalApiService.ModUpdateDetails(this.modApiToken, this.modName, modInfo);
     }
 }
