@@ -1,4 +1,4 @@
-import archiver from 'archiver';
+import { ZipArchive } from 'archiver';
 import { createWriteStream } from 'node:fs';
 import { resolve } from 'node:path';
 
@@ -13,7 +13,7 @@ export async function zipDirectory(
 ): Promise<string> {
     outPath = resolve(outPath);
     const output = createWriteStream(outPath);
-    const archive = archiver('zip', { zlib: { level: 9 } });
+    const archive = new ZipArchive({ zlib: { level: 9 } });
     // from relative path to absolute path
     return new Promise((resolve, reject) => {
         output.on('close', () => resolve(output.path as string));

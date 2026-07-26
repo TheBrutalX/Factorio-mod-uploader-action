@@ -18,12 +18,14 @@ const mockOn = jest.fn((event: string, cb: Function) => {
     mockArchiveOnCapture = { event, cb };
 });
 
-jest.mock('archiver', () => jest.fn(() => ({
-    pipe: mockPipe,
-    directory: mockDirectory,
-    finalize: mockFinalize,
-    on: mockOn,
-})));
+jest.mock('archiver', () => ({
+    ZipArchive: jest.fn().mockImplementation(() => ({
+        pipe: mockPipe,
+        directory: mockDirectory,
+        finalize: mockFinalize,
+        on: mockOn,
+    })),
+}));
 
 describe('zipDirectory', () => {
     let tempDir: string;
