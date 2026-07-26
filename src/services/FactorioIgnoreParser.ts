@@ -144,8 +144,7 @@ export class FactorioIgnoreParser {
         }
 
         let escapedPattern = pattern
-            .replace(/(?<!\.)\*/g, '.*') // Replace '*' with '.*'
-            .replace(/(?<!\\)\//g, String.raw`\/`); // Ensure directory separators are correct
+            .replace(/(?<!\.)\*/g, '.*'); // Replace '*' with '.*'
 
         // Handle directory-specific patterns (trailing slash)
         if (escapedPattern.endsWith('/')) {
