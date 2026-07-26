@@ -62,7 +62,7 @@ export default abstract class BaseProcess implements IBaseProcess {
         return Object.entries(process.env).find(([envKey]) => envKey.toLowerCase() === key.toLowerCase())?.[1];
     }
 
-    protected getInputBoolen(
+    protected getInputBoolean(
         name: string,
         defaultVal: boolean,
         required: boolean = true,

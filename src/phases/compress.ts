@@ -26,7 +26,7 @@ export default class CompressProcess extends BaseProcess {
             this.debug(`No ${INPUT_DOTIGNORE_FILE} specified, using default ${FACTORIOIGNORE_FILE_NAME}`);
             this.dotignorefile = FACTORIOIGNORE_FILE_NAME;
         }
-        this.autoUpdateVersion = this.getInputBoolen(INPUT_AUTO_UPDATE_VERSION, false, false);
+        this.autoUpdateVersion = this.getInputBoolean(INPUT_AUTO_UPDATE_VERSION, false, false);
     }
     async run(): Promise<void> {
         let dotignoreContent = '';
