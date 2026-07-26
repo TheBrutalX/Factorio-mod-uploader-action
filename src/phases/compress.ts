@@ -88,7 +88,7 @@ export default class CompressProcess extends BaseProcess {
      */
     private extractVersionFromRef(githubRef: string): string | null {
         if (!githubRef) return null;
-        const tagMatch = new RegExp(/^refs\/tags\/(.+)$/).exec(githubRef);
+        const tagMatch = /^refs\/tags\/(.+)$/.exec(githubRef);
         if (!tagMatch) return null;
         let version = tagMatch[1];
         // Strip leading 'v' if present (e.g., 'v1.2.3' -> '1.2.3')
