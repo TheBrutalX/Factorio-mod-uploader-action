@@ -20,7 +20,7 @@ export async function run(): Promise<boolean> {
                 instance = new UploadProcess();
                 break;
             default:
-                throw new Error('Invalid action. Please use validate');
+                throw new Error('Invalid action. Valid actions are: validate, compress, upload');
         }
         instance.parseInputs();
         await instance.run();
