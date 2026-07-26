@@ -125,6 +125,19 @@ describe('FactorioModInfoParser', () => {
             expect(parser.getFullInfo().description).toBe('# Test Description');
         });
 
+        it('should throw when description file cannot be read', async () => {
+            mockReadFile.mockRejectedValue(new Error('File not found'));
+            const yaml = `
+                mod_info:
+                    description_file: missing.md
+            `;
+
+            const parser = new FactorioModInfoParser(yaml, tempDir);
+            await expect(parser.validate()).rejects.toThrow(
+                'Failed to read description file'
+            );
+        });
+
         it('should parse source link', async () => {
             process.env.GITHUB_REPOSITORY = 'user/repo';
             process.env.GITHUB_SERVER_URL = 'https://github.com';
