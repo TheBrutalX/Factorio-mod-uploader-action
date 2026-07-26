@@ -71,10 +71,10 @@ export class FactorioModInfoParser {
             (error('Invalid type for description_file'), false)
         ) && (
                 (modInfo.summary === undefined || (typeof modInfo.summary === 'string' && modInfo.summary.length >= 1 && modInfo.summary.length <= 250)) ||
-                (error('Invalid type for summary, min lenght is 1 char and max is 250'), false)
+                (error('Invalid type for summary, min length is 1 char and max is 250'), false)
             ) && (
                 (modInfo.title === undefined || (typeof modInfo.title === 'string' && modInfo.title.length <= 500)) ||
-                (error('Invalid type for tile, max length is 250 char'), false)
+                (error('Invalid type for title, max length is 500 char'), false)
             ) && (
                 (modInfo.attach_source_link === undefined || typeof modInfo.attach_source_link === 'boolean') ||
                 (error('Invalid type for attach_source_link'), false)

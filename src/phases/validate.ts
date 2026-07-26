@@ -23,7 +23,7 @@ export default class ValidateProcess extends BaseProcess {
         if (!info.name) throw new Error('Missing mod name in info.json');
         if (!info.version) throw new Error('Missing mod version in info.json');
 
-        // Check mod name lenght
+        // Check mod name length
         if (info.name.length < 3) throw new Error('Mod name is too short');
         if (info.name.length > 100) throw new Error('Mod name is too long');
         // Check if the mod name is a valid mod name
