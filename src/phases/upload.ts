@@ -23,8 +23,8 @@ export default class UploadProcess extends BaseProcess {
         this.modName = this.getInput(INPUT_MOD_NAME);
         this.modPath = this.getInput(INPUT_MOD_FOLDER);
         this.modZipPath = this.getInput(PROCESS_ZIP_FILE);
-        this.createOnPortal = this.getInputBoolen(PROCESS_CREATE_ON_PORTAL, false, false);
-        this.skipUpdateDetails = this.getInputBoolen(INPUT_SKIP_UPDATE_DETAILS, false, false);
+        this.createOnPortal = this.getInputBoolean(PROCESS_CREATE_ON_PORTAL, false, false);
+        this.skipUpdateDetails = this.getInputBoolean(INPUT_SKIP_UPDATE_DETAILS, false, false);
         // Auto-detect if mod_info.yml exists
         const modInfoPath = `${this.modPath}/mod_info.yml`;
         this.hasModInfo = existsSync(modInfoPath);
