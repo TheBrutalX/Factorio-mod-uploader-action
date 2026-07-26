@@ -226,8 +226,11 @@ export default class FactorioModPortalApiService {
 
     static HandleFactorioModPortalApiError(e: AxiosError): void {
         debug(JSON.stringify(e.response?.data));
-        if (e.response === undefined) throw new fmpe.FactorioModPortalApiError('Unknown error', e.stack);
+        // Check connection-level errors FIRST, before accessing e.response
         if (e.code === 'ECONNREFUSED') throw new fmpe.FactorioModPortalApiError('Connection refused', e.stack);
+        if (e.code === 'ERR_NETWORK') throw new fmpe.FactorioModPortalApiError('Network error', e.stack);
+        if (e.code === 'ECONNABORTED') throw new fmpe.FactorioModPortalApiError('Connection aborted', e.stack);
+        if (e.response === undefined) throw new fmpe.FactorioModPortalApiError('Unknown error (no response)', e.stack);
         if (e.response.status === 500) throw new fmpe.FactorioModPortalApiInternalError(e.stack);
         if (!e.response.data) throw new fmpe.FactorioModPortalApiError('Unknown error', e.stack);
         const errorResponse = e.response.data as FactorioErrorResponse;
