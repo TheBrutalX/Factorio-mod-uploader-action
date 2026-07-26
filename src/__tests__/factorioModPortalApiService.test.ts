@@ -132,6 +132,15 @@ describe('FactorioModPortalApiService', () => {
             await expect(FactorioModPortalApiService.ModUploadFinish('token', 'upload-url', '/path/to/mod.zip'))
                 .rejects.toThrow('Failed to upload mod: Upload failed');
         });
+
+        it('should handle AxiosError in upload finish', async () => {
+            const response = { data: { error: 'InvalidModUpload' } } as AxiosResponse;
+            const error = new AxiosError();
+            error.response = response;
+            mockedAxios.post.mockRejectedValueOnce(error);
+            await expect(FactorioModPortalApiService.ModUploadFinish('token', 'upload-url', '/path/to/mod.zip'))
+                .rejects.toThrow(fmpe.FactorioModPortalApiInvalidUploadError);
+        });
     });
 
     describe('ModPublishInit', () => {
@@ -139,6 +148,15 @@ describe('FactorioModPortalApiService', () => {
             mockedAxios.post.mockResolvedValueOnce({ data: { upload_url: 'test-url' } });
             const result = await FactorioModPortalApiService.ModPublishInit('token', 'test-mod');
             expect(result).toBe('test-url');
+        });
+
+        it('should handle AxiosError in publish init', async () => {
+            const response = { data: { error: 'ModAlreadyExists' } } as AxiosResponse;
+            const error = new AxiosError();
+            error.response = response;
+            mockedAxios.post.mockRejectedValueOnce(error);
+            await expect(FactorioModPortalApiService.ModPublishInit('token', 'test-mod'))
+                .rejects.toThrow(fmpe.FactorioModPortalApiModAlreadyExistsError);
         });
     });
 
@@ -168,6 +186,16 @@ describe('FactorioModPortalApiService', () => {
             await expect(FactorioModPortalApiService.ModPublishFinish('token', 'upload-url', modInfo, '/path/to/mod.zip'))
                 .rejects.toThrow('Failed to publish mod: Publish failed');
         });
+
+        it('should handle AxiosError in publish finish', async () => {
+            const response = { data: { error: 'Forbidden' } } as AxiosResponse;
+            const error = new AxiosError();
+            error.response = response;
+            mockedAxios.post.mockRejectedValueOnce(error);
+            const modInfo: IModInfo = { description: 'test' };
+            await expect(FactorioModPortalApiService.ModPublishFinish('token', 'upload-url', modInfo, '/path/to/mod.zip'))
+                .rejects.toThrow(fmpe.FactorioModPortalApiForbiddenError);
+        });
     });
 
     describe('ModUpdateDetails', () => {
@@ -187,6 +215,16 @@ describe('FactorioModPortalApiService', () => {
             const modInfo: IModInfo = {};
             await expect(FactorioModPortalApiService.ModUpdateDetails('token', 'test-mod', modInfo))
                 .rejects.toThrow('Failed to update mod details: Update failed');
+        });
+
+        it('should handle AxiosError in update details', async () => {
+            const response = { data: { error: 'InvalidApiKey' } } as AxiosResponse;
+            const error = new AxiosError();
+            error.response = response;
+            mockedAxios.post.mockRejectedValueOnce(error);
+            const modInfo: IModInfo = { title: 'Test' };
+            await expect(FactorioModPortalApiService.ModUpdateDetails('token', 'test-mod', modInfo))
+                .rejects.toThrow(fmpe.FactorioModPortalApiInvalidApiTokenError);
         });
     });
 

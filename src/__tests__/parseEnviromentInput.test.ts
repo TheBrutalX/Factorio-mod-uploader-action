@@ -1,14 +1,21 @@
 import BaseProcess from "@phases/baseProcess";
 
 const mockGetInput = jest.fn();
+const mockDebug = jest.fn();
+const mockInfo = jest.fn();
+const mockWarning = jest.fn();
+const mockError = jest.fn();
+const mockExportVariable = jest.fn();
+const mockSetFailed = jest.fn();
+
 jest.mock('@actions/core', () => ({
-    debug: jest.fn(),
-    error: jest.fn(),
-    exportVariable: jest.fn(),
+    debug: (...args: any[]) => mockDebug(...args),
+    error: (...args: any[]) => mockError(...args),
+    exportVariable: (...args: any[]) => mockExportVariable(...args),
     getInput: (...args: any[]) => mockGetInput(...args),
-    info: jest.fn(),
-    setFailed: jest.fn(),
-    warning: jest.fn(),
+    info: (...args: any[]) => mockInfo(...args),
+    setFailed: (...args: any[]) => mockSetFailed(...args),
+    warning: (...args: any[]) => mockWarning(...args),
 }));
 
 class TestProcess extends BaseProcess {
@@ -26,6 +33,13 @@ class TestProcess extends BaseProcess {
         this.test = this.getInput('test_not_required', false);
     }
 
+    callDebug(msg: string): void { this.debug(msg); }
+    callInfo(msg: string): void { this.info(msg); }
+    callWarning(msg: string): void { this.warning(msg); }
+    callError(msg: string): void { this.error(msg); }
+    callExportVariable(name: string, value: string): void { this.exportVariable(name, value); }
+    callSetFailed(msg: string): void { this.setFailed(msg); }
+
     async run(): Promise<void> {
         // Implementation not needed for tests
     }
@@ -37,6 +51,7 @@ describe('BaseProcess', () => {
     beforeEach(() => {
         phase = new TestProcess();
         mockGetInput.mockReturnValue('');
+        jest.clearAllMocks();
     });
 
     afterEach(() => {
@@ -92,6 +107,38 @@ describe('BaseProcess', () => {
             expect(() => phase.parseInputsWithBoolean()).toThrow(
                 'Invalid boolean value: test_bool_key'
             );
+        });
+    });
+
+    describe('wrapper methods', () => {
+        it('should call core.debug via debug wrapper', () => {
+            phase.callDebug('test debug');
+            expect(mockDebug).toHaveBeenCalledWith('test debug');
+        });
+
+        it('should call core.info via info wrapper', () => {
+            phase.callInfo('test info');
+            expect(mockInfo).toHaveBeenCalledWith('test info');
+        });
+
+        it('should call core.warning via warning wrapper', () => {
+            phase.callWarning('test warning');
+            expect(mockWarning).toHaveBeenCalledWith('test warning');
+        });
+
+        it('should call core.error via error wrapper', () => {
+            phase.callError('test error');
+            expect(mockError).toHaveBeenCalledWith('test error');
+        });
+
+        it('should call core.exportVariable via exportVariable wrapper', () => {
+            phase.callExportVariable('MY_VAR', 'my_value');
+            expect(mockExportVariable).toHaveBeenCalledWith('MY_VAR', 'my_value');
+        });
+
+        it('should call core.setFailed via setFailed wrapper', () => {
+            phase.callSetFailed('test failure');
+            expect(mockSetFailed).toHaveBeenCalledWith('test failure');
         });
     });
 });

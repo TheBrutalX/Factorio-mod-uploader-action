@@ -92,6 +92,24 @@ describe('FactorioModInfoParser', () => {
             expect(await parser.validate()).toBe(false);
         });
 
+        it('should fail on summary longer than 250 chars', async () => {
+            const yaml = `
+                mod_info:
+                    summary: "${'x'.repeat(251)}"
+            `;
+            const parser = new FactorioModInfoParser(yaml);
+            expect(await parser.validate()).toBe(false);
+        });
+
+        it('should fail on invalid title type', async () => {
+            const yaml = `
+                mod_info:
+                    title: true
+            `;
+            const parser = new FactorioModInfoParser(yaml);
+            expect(await parser.validate()).toBe(false);
+        });
+
         it('should fail on invalid title length', async () => {
             const yaml = `
                 mod_info:
@@ -191,6 +209,51 @@ describe('FactorioModInfoParser', () => {
             const parser = new FactorioModInfoParser(yaml);
             await parser.validate();
             expect(parser.getFullInfo().tags).toEqual(["circuit-network", "logistic-network", "cheats" ]);
+        });
+
+        it('should fail on invalid attach_source_link type', async () => {
+            const yaml = `
+                mod_info:
+                    attach_source_link: "not-a-boolean"
+            `;
+            const parser = new FactorioModInfoParser(yaml);
+            expect(await parser.validate()).toBe(false);
+        });
+
+        it('should fail on invalid license type', async () => {
+            const yaml = `
+                mod_info:
+                    license: 12345
+            `;
+            const parser = new FactorioModInfoParser(yaml);
+            expect(await parser.validate()).toBe(false);
+        });
+
+        it('should fail on invalid category type', async () => {
+            const yaml = `
+                mod_info:
+                    category: 12345
+            `;
+            const parser = new FactorioModInfoParser(yaml);
+            expect(await parser.validate()).toBe(false);
+        });
+
+        it('should fail on non-array tags', async () => {
+            const yaml = `
+                mod_info:
+                    tags: "not-an-array"
+            `;
+            const parser = new FactorioModInfoParser(yaml);
+            expect(await parser.validate()).toBe(false);
+        });
+
+        it('should fail on tags with non-string element', async () => {
+            const yaml = `
+                mod_info:
+                    tags: [12345]
+            `;
+            const parser = new FactorioModInfoParser(yaml);
+            expect(await parser.validate()).toBe(false);
         });
     });
 
