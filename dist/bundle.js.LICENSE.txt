@@ -19,43 +19,15 @@
  * Released under the MIT License.
  */
 
+/*! Axios v1.18.0 Copyright (c) 2026 Matt Zabriskie and contributors */
+
 /*! crc32.js (C) 2014-present SheetJS -- http://sheetjs.com */
 
 /*! formdata-polyfill. MIT License. Jimmy Wärting <https://jimmy.warting.se/opensource> */
 
+/*! safe-buffer. MIT License. Feross Aboukhadijeh <https://feross.org/opensource> */
+
 /*! ws. MIT License. Einar Otto Stangvik <einaros@gmail.com> */
-
-/**
- * Archiver Core
- *
- * @ignore
- * @license [MIT]{@link https://github.com/archiverjs/node-archiver/blob/master/LICENSE}
- * @copyright (c) 2012-2014 Chris Talkington, contributors.
- */
-
-/**
- * Archiver Vending
- *
- * @ignore
- * @license [MIT]{@link https://github.com/archiverjs/node-archiver/blob/master/LICENSE}
- * @copyright (c) 2012-2014 Chris Talkington, contributors.
- */
-
-/**
- * JSON Format Plugin
- *
- * @module plugins/json
- * @license [MIT]{@link https://github.com/archiverjs/node-archiver/blob/master/LICENSE}
- * @copyright (c) 2012-2014 Chris Talkington, contributors.
- */
-
-/**
- * TAR Format Plugin
- *
- * @module plugins/tar
- * @license [MIT]{@link https://github.com/archiverjs/node-archiver/blob/master/LICENSE}
- * @copyright (c) 2012-2014 Chris Talkington, contributors.
- */
 
 /**
  * ZIP Format Plugin
