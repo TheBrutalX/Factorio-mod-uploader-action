@@ -1,8 +1,8 @@
 import { INPUT_MOD_FOLDER, INPUT_MOD_NAME, PROCESS_CREATE_ON_PORTAL, PROCESS_MOD_VERSION } from '@constants';
 import ActionHelper from '@utils/ActionHelper';
-import fs from 'fs';
-import { readFile } from 'fs/promises';
-import path from 'path';
+import fs from 'node:fs';
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
 import BaseProcess from './baseProcess';
 
 export default class ValidateProcess extends BaseProcess {

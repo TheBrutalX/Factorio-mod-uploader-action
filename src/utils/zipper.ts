@@ -1,6 +1,6 @@
 import archiver from 'archiver';
-import { createWriteStream } from 'fs';
-import { resolve } from 'path';
+import { createWriteStream } from 'node:fs';
+import { resolve } from 'node:path';
 
 /**
  * Compresses the specified directory into a .zip file

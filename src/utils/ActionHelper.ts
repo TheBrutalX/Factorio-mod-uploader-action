@@ -20,6 +20,7 @@ export default class ActionHelper {
             }
             return modExists;
         } catch (error) {
+            debug(`Failed to check if mod ${name} is on the portal: ${error}`);
             throw error;
         }
     }
