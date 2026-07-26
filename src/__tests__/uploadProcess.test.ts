@@ -284,5 +284,74 @@ describe('UploadProcess', () => {
             expect(mockUploadModFlow).toHaveBeenCalled();
             expect(mockUpdateDetails).toHaveBeenCalled();
         });
+
+        it('should use createModFlow when createOnPortal is true', async () => {
+            jest.spyOn(core, 'getInput').mockImplementation((name: string) => {
+                switch (name) {
+                    case INPUT_MOD_FOLDER:
+                        return 'test-mod';
+                    case INPUT_MOD_NAME:
+                        return 'test-mod';
+                    case PROCESS_ZIP_FILE:
+                        return './dist/test-mod_1.0.0.zip';
+                    case INPUT_FACTORIO_API_KEY:
+                        return 'test-api-key';
+                    case PROCESS_CREATE_ON_PORTAL:
+                        return 'true';
+                    case INPUT_SKIP_UPDATE_DETAILS:
+                        return 'true';
+                    default:
+                        return '';
+                }
+            });
+
+            (existsSync as jest.Mock).mockReturnValue(true);
+            uploadProcess.parseInputs();
+
+            jest.spyOn(uploadProcess as any, 'parseModInfo').mockResolvedValue(mockModInfo);
+
+            const mockCheckIfModIsPublished = jest
+                .spyOn(FactorioModPortalApiService, 'CheckIfModIsPublished')
+                .mockResolvedValue(false);
+            const mockCreateModFlow = jest
+                .spyOn(uploadProcess as any, 'createModFlow')
+                .mockResolvedValue(undefined);
+
+            await uploadProcess.run();
+
+            expect(mockCheckIfModIsPublished).toHaveBeenCalled();
+            expect(mockCreateModFlow).toHaveBeenCalled();
+        });
+
+        it('should throw when mod already exists and createOnPortal is true', async () => {
+            jest.spyOn(core, 'getInput').mockImplementation((name: string) => {
+                switch (name) {
+                    case INPUT_MOD_FOLDER:
+                        return 'test-mod';
+                    case INPUT_MOD_NAME:
+                        return 'test-mod';
+                    case PROCESS_ZIP_FILE:
+                        return './dist/test-mod_1.0.0.zip';
+                    case INPUT_FACTORIO_API_KEY:
+                        return 'test-api-key';
+                    case PROCESS_CREATE_ON_PORTAL:
+                        return 'true';
+                    case INPUT_SKIP_UPDATE_DETAILS:
+                        return 'true';
+                    default:
+                        return '';
+                }
+            });
+
+            (existsSync as jest.Mock).mockReturnValue(true);
+            uploadProcess.parseInputs();
+
+            jest.spyOn(FactorioModPortalApiService, 'CheckIfModIsPublished')
+                .mockResolvedValue(true);
+
+            await expect(uploadProcess.run()).rejects.toThrow(
+                'Mod test-mod already exists on the portal, please check the name'
+            );
+        });
     });
 });
