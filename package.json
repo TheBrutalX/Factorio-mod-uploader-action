@@ -10,7 +10,7 @@
         "run": "npm run build && npm start",
         "dev": "tsx --env-file=.env src/dev.ts",
         "pretty": "prettier --write \"./src/**/*.ts\"",
-        "coverage": "c8 npm test"
+        "coverage": "npx c8 npm test"
     },
     "author": "",
     "license": "ISC",
