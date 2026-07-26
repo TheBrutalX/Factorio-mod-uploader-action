@@ -41,9 +41,9 @@ describe('FactorioTypes', () => {
     describe('ValidateFactorioTag', () => {
         const validTags = [
             'transportation', 'logistics', 'trains', 'combat', 'armor',
-            'enemies', 'environment', 'mining', 'fluids', 'logistic-network',
-            'circuit-network', 'manufacturing', 'power', 'storage',
-            'blueprints', 'cheats'
+            'character', 'enemies', 'environment', 'mining', 'fluids',
+            'logistic-network', 'circuit-network', 'manufacturing', 'planets',
+            'power', 'storage', 'blueprints', 'cheats'
         ];
 
         validTags.forEach(tag => {

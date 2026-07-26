@@ -43,6 +43,7 @@ export type FactorioModTagType =
     | "trains"
     | "combat"
     | "armor"
+    | "character"
     | "enemies"
     | "environment"
     | "mining"
@@ -50,6 +51,7 @@ export type FactorioModTagType =
     | "logistic-network"
     | "circuit-network"
     | "manufacturing"
+    | "planets"
     | "power"
     | "storage"
     | "blueprints"
@@ -61,6 +63,7 @@ export const FactorioModTags: FactorioModTagType[] = [
     "trains",
     "combat",
     "armor",
+    "character",
     "enemies",
     "environment",
     "mining",
@@ -68,6 +71,7 @@ export const FactorioModTags: FactorioModTagType[] = [
     "logistic-network",
     "circuit-network",
     "manufacturing",
+    "planets",
     "power",
     "storage",
     "blueprints",
