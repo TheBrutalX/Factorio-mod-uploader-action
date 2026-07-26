@@ -1,4 +1,5 @@
 import * as fmpe from '@errors/FactorioModPortalApiErrors';
+import { FactorioModPortalApiPermissionError, FactorioModPortalApiInvalidModError } from '@errors/FactorioModPortalApiErrors';
 import { IModInfo } from '@interfaces/IFactorioModInfo';
 import FactorioModPortalApiService from '@services/FactorioModPortalApiService';
 import axios, { AxiosError, AxiosResponse } from 'axios';
@@ -36,6 +37,12 @@ describe('FactorioModPortalApiService', () => {
             mockedAxios.get.mockRejectedValueOnce(error);
             const result = await FactorioModPortalApiService.CheckIfModIsPublished('test-mod');
             expect(result).toBe(false);
+        });
+
+        it('should re-throw non-Axios errors', async () => {
+            mockedAxios.get.mockRejectedValueOnce(new Error('Network failure'));
+            await expect(FactorioModPortalApiService.CheckIfModIsPublished('test-mod'))
+                .rejects.toThrow('Error fetching mod info: Error: Network failure');
         });
     });
 
@@ -250,6 +257,63 @@ describe('FactorioModPortalApiService', () => {
             };
             expect(() => FactorioModPortalApiService.HandleFactorioModPortalApiError(axiosError))
                 .toThrow(fmpe.FactorioModPortalApiError);
+        });
+
+        it('should call warning when error response has a message', () => {
+            const { warning } = require('@actions/core');
+            const axiosError: any = {
+                response: { data: { error: 'InvalidApiKey', message: 'Token is invalid' } },
+                stack: 'error stack'
+            };
+            expect(() => FactorioModPortalApiService.HandleFactorioModPortalApiError(axiosError))
+                .toThrow(fmpe.FactorioModPortalApiInvalidApiTokenError);
+            expect(warning).toHaveBeenCalledWith('Token is invalid');
+        });
+
+        it('should throw FactorioModPortalApiError when error field is missing', () => {
+            const axiosError: any = {
+                response: { data: { message: 'Something went wrong' } },
+                stack: 'error stack'
+            };
+            expect(() => FactorioModPortalApiService.HandleFactorioModPortalApiError(axiosError))
+                .toThrow(fmpe.FactorioModPortalApiError);
+        });
+
+        it('should handle error with status 500 and no data gracefully', () => {
+            const axiosError: any = {
+                response: { status: 500 },
+                stack: 'error stack'
+            };
+            expect(() => FactorioModPortalApiService.HandleFactorioModPortalApiError(axiosError))
+                .toThrow(fmpe.FactorioModPortalApiInternalError);
+        });
+    });
+
+    describe('Error class instantiation', () => {
+        it('should create FactorioModPortalApiPermissionError', () => {
+            const err = new FactorioModPortalApiPermissionError('stack trace');
+            expect(err).toBeInstanceOf(Error);
+            expect(err.name).toBe('PermissionError');
+            expect(err.message).toBe('The API token does not have permission for the current endpoint');
+        });
+
+        it('should create FactorioModPortalApiPermissionError without stack', () => {
+            const err = new FactorioModPortalApiPermissionError();
+            expect(err).toBeInstanceOf(Error);
+            expect(err.name).toBe('PermissionError');
+        });
+
+        it('should create FactorioModPortalApiInvalidModError', () => {
+            const err = new FactorioModPortalApiInvalidModError('stack trace');
+            expect(err).toBeInstanceOf(Error);
+            expect(err.name).toBe('InvalidModRelease');
+            expect(err.message).toBe('Invalid release data in info.json');
+        });
+
+        it('should create FactorioModPortalApiInvalidModError without stack', () => {
+            const err = new FactorioModPortalApiInvalidModError();
+            expect(err).toBeInstanceOf(Error);
+            expect(err.name).toBe('InvalidModRelease');
         });
     });
 });

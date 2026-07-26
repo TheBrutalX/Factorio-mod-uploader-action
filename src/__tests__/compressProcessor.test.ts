@@ -114,6 +114,39 @@ describe('CompressProcess', () => {
         );
     });
 
+    it('should skip deleting modDir when it does not exist', async () => {
+        jest.spyOn(compressProcess as any, 'getInput').mockImplementation(
+            (name: any) => {
+                switch (name) {
+                    case INPUT_MOD_NAME:
+                        return 'test-mod';
+                    case INPUT_MOD_FOLDER:
+                        return '/folder';
+                    case PROCESS_MOD_VERSION:
+                        return '1.0.0';
+                    default:
+                        return '';
+                }
+            }
+        );
+
+        // dotignore exists, modDir does not exist
+        mockExistsSync.mockReturnValueOnce(true).mockReturnValueOnce(false);
+        mockGetPatterns.mockReturnValue([]);
+        (zipDirectory as jest.Mock).mockResolvedValue('/tmp/test-mod_1.0.0.zip');
+        compressProcess.parseInputs();
+        const tmpPath = path.normalize('/tmp');
+        (compressProcess as any)['tmpPath'] = tmpPath;
+
+        await compressProcess.run();
+
+        // rm should be called only for cleaning up zipDir after zipping, not for modDir
+        expect(rm).toHaveBeenCalledWith(path.normalize('/tmp/zip'), { recursive: true });
+        expect(core.warning).not.toHaveBeenCalledWith(
+            expect.stringContaining('already exists')
+        );
+    });
+
     it('should parse inputs correctly', () => {
         jest.spyOn(compressProcess as any, 'getInput').mockImplementation(
             (name: any) => {

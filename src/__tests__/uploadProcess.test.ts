@@ -183,18 +183,13 @@ describe('UploadProcess', () => {
             const mockCheckIfModIsPublished = jest
                 .spyOn(FactorioModPortalApiService, 'CheckIfModIsPublished')
                 .mockResolvedValue(false);
-            const mockUploadModFlow = jest
-                .spyOn(uploadProcess as any, 'uploadModFlow')
-                .mockResolvedValue(undefined);
-            const mockUpdateDetails = jest
-                .spyOn(uploadProcess as any, 'updateDetails')
-                .mockResolvedValue(undefined);
 
             await uploadProcess.run();
 
             expect(mockCheckIfModIsPublished).toHaveBeenCalled();
-            expect(mockUploadModFlow).toHaveBeenCalled();
-            expect(mockUpdateDetails).not.toHaveBeenCalled();
+            expect(FactorioModPortalApiService.ModUploadInit).toHaveBeenCalled();
+            expect(FactorioModPortalApiService.ModUploadFinish).toHaveBeenCalled();
+            expect(FactorioModPortalApiService.ModUpdateDetails).not.toHaveBeenCalled();
         });
 
         it('should skip updateDetails when mod_info.yml does not exist', async () => {
@@ -228,18 +223,13 @@ describe('UploadProcess', () => {
             const mockCheckIfModIsPublished = jest
                 .spyOn(FactorioModPortalApiService, 'CheckIfModIsPublished')
                 .mockResolvedValue(false);
-            const mockUploadModFlow = jest
-                .spyOn(uploadProcess as any, 'uploadModFlow')
-                .mockResolvedValue(undefined);
-            const mockUpdateDetails = jest
-                .spyOn(uploadProcess as any, 'updateDetails')
-                .mockResolvedValue(undefined);
 
             await uploadProcess.run();
 
             expect(mockCheckIfModIsPublished).toHaveBeenCalled();
-            expect(mockUploadModFlow).toHaveBeenCalled();
-            expect(mockUpdateDetails).not.toHaveBeenCalled();
+            expect(FactorioModPortalApiService.ModUploadInit).toHaveBeenCalled();
+            expect(FactorioModPortalApiService.ModUploadFinish).toHaveBeenCalled();
+            expect(FactorioModPortalApiService.ModUpdateDetails).not.toHaveBeenCalled();
         });
 
         it('should call updateDetails when both conditions are met', async () => {
@@ -271,18 +261,13 @@ describe('UploadProcess', () => {
             const mockCheckIfModIsPublished = jest
                 .spyOn(FactorioModPortalApiService, 'CheckIfModIsPublished')
                 .mockResolvedValue(false);
-            const mockUploadModFlow = jest
-                .spyOn(uploadProcess as any, 'uploadModFlow')
-                .mockResolvedValue(undefined);
-            const mockUpdateDetails = jest
-                .spyOn(uploadProcess as any, 'updateDetails')
-                .mockResolvedValue(undefined);
 
             await uploadProcess.run();
 
             expect(mockCheckIfModIsPublished).toHaveBeenCalled();
-            expect(mockUploadModFlow).toHaveBeenCalled();
-            expect(mockUpdateDetails).toHaveBeenCalled();
+            expect(FactorioModPortalApiService.ModUploadInit).toHaveBeenCalled();
+            expect(FactorioModPortalApiService.ModUploadFinish).toHaveBeenCalled();
+            expect(FactorioModPortalApiService.ModUpdateDetails).toHaveBeenCalled();
         });
 
         it('should use createModFlow when createOnPortal is true', async () => {
@@ -313,14 +298,12 @@ describe('UploadProcess', () => {
             const mockCheckIfModIsPublished = jest
                 .spyOn(FactorioModPortalApiService, 'CheckIfModIsPublished')
                 .mockResolvedValue(false);
-            const mockCreateModFlow = jest
-                .spyOn(uploadProcess as any, 'createModFlow')
-                .mockResolvedValue(undefined);
 
             await uploadProcess.run();
 
             expect(mockCheckIfModIsPublished).toHaveBeenCalled();
-            expect(mockCreateModFlow).toHaveBeenCalled();
+            expect(FactorioModPortalApiService.ModPublishInit).toHaveBeenCalled();
+            expect(FactorioModPortalApiService.ModPublishFinish).toHaveBeenCalled();
         });
 
         it('should throw when mod already exists and createOnPortal is true', async () => {
