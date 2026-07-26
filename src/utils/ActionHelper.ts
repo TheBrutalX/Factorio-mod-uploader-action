@@ -31,9 +31,11 @@ export default class ActionHelper {
         version: string
     ): Promise<boolean> {
         try {
-            const latestVersion = await FactorioModPortalApiService.getLatestModVersion(name);
-            if (!latestVersion) return false
-            return semver.gt(version, latestVersion);
+            const versionExists = await FactorioModPortalApiService.checkModVersionExists(name, version);
+            // If the version already exists on the portal, no update needed
+            if (versionExists) return false;
+            // Version doesn't exist, so update is needed
+            return true;
         } catch (error) {
             if (error instanceof FactorioModPortalApiModNotFoundError) return false;
             throw error;

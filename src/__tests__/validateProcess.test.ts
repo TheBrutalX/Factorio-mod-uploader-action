@@ -100,9 +100,6 @@ describe('ValidateProcess', () => {
         jest.spyOn(fs.promises, 'readFile').mockResolvedValue(
             '{"name": "test-mod", "version": "1.0.0"}'
         );
-        (
-            FactorioModPortalApiService.getLatestModVersion as jest.Mock
-        ).mockResolvedValue('1.0.0');
         await expect(validateProcess.run()).rejects.toThrow(
             "Mod 'test-mod' version '1.0.0' is already on the portal"
         );
@@ -116,9 +113,6 @@ describe('ValidateProcess', () => {
         jest.spyOn(fs.promises, 'readFile').mockResolvedValue(
             '{"name": "test-mod", "version": "1.0.1"}'
         );
-        (
-            FactorioModPortalApiService.getLatestModVersion as jest.Mock
-        ).mockResolvedValue('1.0.0');
         await validateProcess.run();
         expect(core.info).toHaveBeenCalledWith('Mod name: test-mod');
         expect(core.info).toHaveBeenCalledWith('Mod version: 1.0.1');

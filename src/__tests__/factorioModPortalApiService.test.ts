@@ -39,18 +39,42 @@ describe('FactorioModPortalApiService', () => {
         });
     });
 
-    describe('getLatestModVersion', () => {
-        it('should return latest version', async () => {
+    describe('checkModVersionExists', () => {
+        it('should return true if version exists in releases', async () => {
             mockedAxios.get.mockResolvedValueOnce({
                 data: {
                     releases: [
                         { version: '1.0.0', released_at: '2023-01-01' },
-                        { version: '1.0.1', released_at: '2023-01-02' }
+                        { version: '1.0.1', released_at: '2023-01-02' },
+                        { version: '2.3.0', released_at: '2023-06-01' }
                     ]
                 }
             });
-            const result = await FactorioModPortalApiService.getLatestModVersion('test-mod');
-            expect(result).toBe('1.0.1');
+            const result = await FactorioModPortalApiService.checkModVersionExists('test-mod', '1.0.0');
+            expect(result).toBe(true);
+        });
+
+        it('should return false if version does not exist in releases', async () => {
+            mockedAxios.get.mockResolvedValueOnce({
+                data: {
+                    releases: [
+                        { version: '2.3.0', released_at: '2023-06-01' },
+                        { version: '2.3.1', released_at: '2023-06-02' }
+                    ]
+                }
+            });
+            const result = await FactorioModPortalApiService.checkModVersionExists('test-mod', '2.2.4');
+            expect(result).toBe(false);
+        });
+
+        it('should return false if releases array is empty', async () => {
+            mockedAxios.get.mockResolvedValueOnce({
+                data: {
+                    releases: []
+                }
+            });
+            const result = await FactorioModPortalApiService.checkModVersionExists('test-mod', '1.0.0');
+            expect(result).toBe(false);
         });
 
         it('should throw ModNotFoundError if mod does not exist', async () => {
@@ -58,7 +82,7 @@ describe('FactorioModPortalApiService', () => {
             const error = new AxiosError();
             error.response = response;
             mockedAxios.get.mockRejectedValueOnce(error);
-            await expect(FactorioModPortalApiService.getLatestModVersion('test-mod'))
+            await expect(FactorioModPortalApiService.checkModVersionExists('test-mod', '1.0.0'))
                 .rejects.toThrow(fmpe.FactorioModPortalApiModNotFoundError);
         });
     });
