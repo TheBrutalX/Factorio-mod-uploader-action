@@ -1,4 +1,4 @@
-import { debug, error, exportVariable, getInput, info, InputOptions, setFailed, warning } from '@actions/core';
+import { debug as coreDebug, error as coreError, exportVariable, getInput, info as coreInfo, InputOptions, setFailed, warning as coreWarning } from '@actions/core';
 import { IBaseProcess } from '@interfaces/IBaseProcess';
 
 export default abstract class BaseProcess implements IBaseProcess {
@@ -23,7 +23,7 @@ export default abstract class BaseProcess implements IBaseProcess {
             throw new Error(`Input required and not supplied: ${name}`);
         }
         if (!required && !userValue) {
-            debug(`Input not required and not supplied: ${name}`);
+            coreDebug(`Input not required and not supplied: ${name}`);
         }
         // if user value is provided, return it
         if (userValue) return userValue;
@@ -78,19 +78,19 @@ export default abstract class BaseProcess implements IBaseProcess {
     }
 
     protected debug(message: string): void {
-        debug(message);
+        coreDebug(message);
     }
 
     protected info(message: string): void {
-        info(message);
+        coreInfo(message);
     }
 
     protected warning(message: string): void {
-        warning(message);
+        coreWarning(message);
     }
 
     protected error(message: string): void {
-        error(message);
+        coreError(message);
     }
 
     protected exportVariable(name: string, value: string): void {
