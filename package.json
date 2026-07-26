@@ -9,7 +9,8 @@
         "test": "jest",
         "run": "npm run build && npm start",
         "dev": "tsx --env-file=.env src/dev.ts",
-        "pretty": "prettier --write \"./src/**/*.ts\""
+        "pretty": "prettier --write \"./src/**/*.ts\"",
+        "coverage": "c8 npm test"
     },
     "author": "",
     "license": "ISC",
