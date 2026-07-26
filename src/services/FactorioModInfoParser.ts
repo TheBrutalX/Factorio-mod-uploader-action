@@ -7,6 +7,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path/posix";
 
 type ModInfoWrapper = {
+    version?: string;
     mod_info?: {
         description_file?: string;
         summary?: string;
@@ -231,7 +232,7 @@ export class FactorioModInfoParser {
      */
     public updateVersion(newVersion: string): void {
         this.yamlContent.mod_info ??= {};
-        (this.yamlContent as any).version = newVersion;
+        this.yamlContent.version = newVersion;
         info(`Version updated to ${newVersion}`);
     }
 
